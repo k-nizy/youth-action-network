@@ -112,7 +112,7 @@ Complete API documentation available in:
 
 ### Test User Credentials
 ```
-Email: kevin@yan.com
+Email: admin@example.com
 Password: admin123
 Role: Admin
 ```

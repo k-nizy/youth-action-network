@@ -2,7 +2,6 @@
 
 > **For:** Backend Developer Review  
 > **Project:** Youth Action Network Management Platform  
-> **Developer:** Kevin  
 > **Date:** January 30, 2026
 
 ---
@@ -288,7 +287,7 @@ Expected Response:
 
 ---
 
-## 💬 Questions to Ask Kevin
+## 💬 Questions for the Development Team
 
 1. **Deployment Plans:** Where will this be deployed? (Render, Railway, Heroku?)
 2. **Frontend Integration:** Who's building the frontend? React?

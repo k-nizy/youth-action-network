@@ -13,7 +13,7 @@ POST /api/auth/register
 
 Body:
 {
-  "name": "Admin Kevin",
+  "name": "Admin User",
   "email": "admin@yan.com",
   "password": "admin123",
   "role": "admin",

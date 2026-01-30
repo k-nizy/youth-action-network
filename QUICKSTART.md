@@ -1,4 +1,4 @@
-# Quick Start Guide for Kevin
+# Quick Start Guide
 
 ## What We Just Built
 
@@ -41,7 +41,7 @@ POST http://localhost:5000/api/auth/register
 
 Body (JSON):
 {
-  "name": "Kevin",
+  "name": "Admin User",
   "email": "admin@example.com",
   "password": "password123",
   "role": "admin",
