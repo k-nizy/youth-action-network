@@ -194,8 +194,7 @@ youth-action-network/
 
 ## 👥 Team
 
-**Backend Developer:** Kevin  
-**Contact:** kevin@yan.com  
+**Development Team:** YAN Platform Contributors  
 **Project:** Youth Action Network Platform
 
 ---

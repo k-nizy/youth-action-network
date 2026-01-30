@@ -25,7 +25,7 @@ You now have a **WORKING** Node.js backend with:
 
 ```bash
 # Make sure you're in the project directory
-cd C:\Users\Qevin\.gemini\antigravity\scratch\youth-action-network
+cd youth-action-network
 
 # Start in development mode (auto-restarts on changes)
 npm run dev
@@ -42,7 +42,7 @@ POST http://localhost:5000/api/auth/register
 Body (JSON):
 {
   "name": "Kevin",
-  "email": "kevin@yan.com",
+  "email": "admin@example.com",
   "password": "password123",
   "role": "admin",
   "organization": "BSE Team"
@@ -55,7 +55,7 @@ POST http://localhost:5000/api/auth/login
 
 Body (JSON):
 {
-  "email": "kevin@yan.com",
+  "email": "admin@example.com",
   "password": "password123"
 }
 ```

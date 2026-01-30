@@ -31,7 +31,7 @@ A complete **Node.js/Express REST API** for managing a youth network platform wi
 
 ### 1. Clone/Access the Project
 ```bash
-cd C:\Users\Qevin\.gemini\antigravity\scratch\youth-action-network
+cd youth-action-network
 ```
 
 ### 2. Install Dependencies (if not done)
@@ -66,7 +66,7 @@ npm run dev
 ## 🧪 How to Test (Postman)
 
 ### Test Credentials (Already Created)
-- **Email:** `kevin@yan.com`
+- **Email:** `admin@example.com`
 - **Password:** `admin123`
 - **Role:** Admin
 
@@ -78,7 +78,7 @@ POST http://localhost:5000/api/auth/login
 
 Body (JSON):
 {
-  "email": "kevin@yan.com",
+  "email": "admin@example.com",
   "password": "admin123"
 }
 
@@ -86,7 +86,7 @@ Expected Response:
 {
   "success": true,
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "data": { "name": "Admin Kevin", "email": "kevin@yan.com", "role": "admin" }
+  "data": { "name": "Admin User", "email": "admin@example.com", "role": "admin" }
 }
 ```
 
@@ -335,9 +335,8 @@ This project demonstrates:
 
 ## 📞 Contact
 
-**Developer:** Kevin  
-**Email:** kevin@yan.com  
-**Project Location:** `C:\Users\Qevin\.gemini\antigravity\scratch\youth-action-network`
+**Development Team:** YAN Platform Contributors  
+**Repository:** https://github.com/k-nizy/youth-action-network
 
 ---
 
