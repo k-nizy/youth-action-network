@@ -1324,8 +1324,8 @@
                 <div class="footer-newsletter">
                     <h4>Stay Updated</h4>
                     <p>Subscribe to our newsletter for the latest news and opportunities</p>
-                    <form class="newsletter-form">
-                        <input type="email" placeholder="Your email">
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" placeholder="Your email" id="newsletterEmail" required>
                         <button type="submit">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                 <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2"
@@ -1333,6 +1333,10 @@
                             </svg>
                         </button>
                     </form>
+                    <div id="newsletterSuccess" style="display:none; margin-top: 0.75rem; padding: 0.85rem 1rem; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 0.5rem; color: inherit; font-size: 0.9rem; line-height: 1.5;">
+                        <strong>✓ Thank you for subscribing.</strong><br>
+                        We'll keep you in touch with the latest news and opportunities from YAN Rwanda.
+                    </div>
                 </div>
             </div>
 
@@ -1549,6 +1553,13 @@
                 btn.textContent = 'Show';
             }
         }
+
+        // Newsletter form — show confirmation in place, no page scroll
+        document.getElementById('newsletterForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            this.style.display = 'none';
+            document.getElementById('newsletterSuccess').style.display = 'block';
+        });
     </script>
 
     <script src="config.js?v=3"></script>
