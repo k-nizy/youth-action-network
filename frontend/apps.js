@@ -158,6 +158,7 @@ async function initializeApp() {
     initializeOfflineDetection();
     initializeScrollProgress();
     initializeRippleEffect();
+    initMemberSidebarToggle();
 
     // UI HINT: If we were previously logged in, show the profile dropdown shell immediately
     if (localStorage.getItem('yan_auth_hint') === 'true') {
@@ -204,6 +205,22 @@ function initializeNavigation() {
             navbar.classList.remove('scrolled');
         }
     });
+
+    // Mobile Dashboard toggle
+    function initMemberSidebarToggle() {
+        const sidebar = document.getElementById('memberSidebar');
+        const overlay = document.getElementById('dashboardSidebarOverlay');
+        const menuBtn = document.getElementById('memberMenuBtn');
+        if (!sidebar || !overlay || !menuBtn) return;
+        
+        function open() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+        function close() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+        
+        menuBtn.addEventListener('click', open);
+        overlay.addEventListener('click', close);
+        document.querySelectorAll('.dashboard-nav-item').forEach(btn => btn.addEventListener('click', close));
+    }
+    window.initMemberSidebarToggle = initMemberSidebarToggle;
 
     // Hamburger menu
     hamburger.addEventListener('click', () => {
@@ -852,9 +869,19 @@ const organizationSectorOrder = ["HEALTH", "EDUCATION", "CHILD PROTECTION", "YOU
 
 let impactRatingsData = [
     {
-        organization: "Youth Leadership Initiative",
+        organization: "CARE AND HELP CHILD ORGANIZATION",
         rating: "PLATINUM",
-        evidence: "Successfully trained 500+ young leaders in advocacy and strategic planning across 5 regions."
+        evidence: "Successfully reached 574+ vulnerable children in providing safety, fostering mental well-being across Rwanda."
+    },
+    {
+        organization: "WHAT IF-RWANDA",
+        rating: "GOLD",
+        evidence: "Installed water filtration systems and providing consistent mentorship for children at Iramiro Center."
+    },
+    {
+        organization: "ASPIRE DEBATE RWANDA",
+        rating: "GOLD",
+        evidence: "Unleashing the power of the youth voice through transformative debate education since 2014."
     },
     {
         organization: "Digital Rwanda",
@@ -862,8 +889,13 @@ let impactRatingsData = [
         evidence: "Equipped 200 students with digital literacy skills and provided 50 internships in tech startups."
     },
     {
+        organization: "INFORMED FUTURE GENERATIONS",
+        rating: "PLATINUM",
+        evidence: "Challenging harmful social norms through the 'Like Your Sister' program in Eastern Province."
+    },
+    {
         organization: "Green Action Network",
-        rating: "GOLD",
+        rating: "BRONZE",
         evidence: "Planted 10,000 trees and reached 5,000 community members with environmental awareness campaigns."
     }
 ];
@@ -882,14 +914,25 @@ async function initializeOrganizations() {
     featuredContainer.innerHTML = '';
 
     if (organizationsData && organizationsData.length > 0) {
-        // Only show the first organization for the spotlight
-        const org = organizationsData[0];
-        const card = createFeaturedOrganizationCard(org);
-        featuredContainer.appendChild(card);
+        // Show ONLY one organization for the spotlight as requested
+        const maxFeatured = 1;
         
-        // Add reveal effect
-        globalRevealObserver.observe(card);
-        card.classList.add('visible');
+        // Apply grid styling to container to hold multiple cards
+        featuredContainer.style.display = 'grid';
+        featuredContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+        featuredContainer.style.gap = '2rem';
+        
+        for (let i = 0; i < maxFeatured; i++) {
+            const org = organizationsData[i];
+            const card = createFeaturedOrganizationCard(org);
+            featuredContainer.appendChild(card);
+            
+            // Add reveal effect
+            if (typeof globalRevealObserver !== 'undefined') {
+                globalRevealObserver.observe(card);
+            }
+            setTimeout(() => card.classList.add('visible'), i * 150);
+        }
     } else {
         featuredContainer.innerHTML = `
             <div class="empty-state-card" style="text-align: center; padding: 3rem;">
@@ -935,11 +978,8 @@ function createFeaturedOrganizationCard(org) {
                     <strong>The Impact:</strong> ${org.impactData || 'Driving systemic change through youth-led advocacy and professional capacity building.'}
                 </div>
             </div>
-            <div class="featured-org-actions">
-                <button class="btn btn-premium-spotlight org-link" data-org-id="${orgId}">
-                    <span>Explore Impact Story</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
+            <div class="featured-org-actions" style="display: none;">
+                <!-- Explore Impact Story Button Deleted as requested -->
             </div>
         </div>
     `;
@@ -1141,6 +1181,7 @@ function initializeCapacityBuilding() {
     if (backBtn) {
         backBtn.addEventListener('click', () => {
             document.getElementById('lmsSection').style.display = 'none';
+            document.getElementById('capacity').style.display = 'block';
             document.getElementById('capacity').scrollIntoView({ behavior: 'smooth' });
         });
     }
@@ -1271,7 +1312,8 @@ function createModuleCard(module, progress, isEnrolled) {
         progress.status === 'in-progress' ? 'In Progress' : 'Completed';
 
     const currentQuarter = getCurrentQuarter();
-    const isLocked = module.quarter && module.quarter !== currentQuarter;
+    // UNLOCK ALL courses for better UX as requested
+    const isLocked = false;
 
     if (isLocked) {
         card.classList.add('locked');
@@ -1341,6 +1383,179 @@ function createModuleCard(module, progress, isEnrolled) {
 }
 
 // ================================
+// EDIT COURSE (Inline modal on homepage)
+// ================================
+
+// Inject the edit course modal into the DOM (once)
+function ensureEditCourseModal() {
+    if (document.getElementById('editCourseModal')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <div class="modal" id="editCourseModal">
+            <div class="modal-content" style="max-width:560px;">
+                <button class="modal-close" id="editCourseCloseBtn">&times;</button>
+                <div class="modal-header">
+                    <h3>✏️ Edit Course Configuration</h3>
+                    <p>Update course details for the Capacity Building module</p>
+                </div>
+                <form class="modal-form" id="editCourseForm" onsubmit="return false;">
+                    <input type="hidden" id="ecId">
+
+                    <div class="form-group">
+                        <label>Course Title</label>
+                        <input type="text" id="ecTitle" placeholder="Enter course title" required>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label>Quarter</label>
+                            <select id="ecQuarter" style="width:100%;padding:0.85rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:0.95rem;outline:none;">
+                                <option value="Q1">Q1</option>
+                                <option value="Q2">Q2</option>
+                                <option value="Q3">Q3</option>
+                                <option value="Q4">Q4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty</label>
+                            <select id="ecDifficulty" style="width:100%;padding:0.85rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:0.95rem;outline:none;">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select id="ecStatus" style="width:100%;padding:0.85rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:0.95rem;outline:none;">
+                                <option value="published">Published</option>
+                                <option value="draft">Draft</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration</label>
+                            <input type="text" id="ecDuration" placeholder="e.g. 2 Weeks">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="ecDesc" rows="3" placeholder="Short course description…"
+                            style="width:100%;padding:0.85rem 1rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:0.95rem;outline:none;resize:vertical;font-family:inherit;"></textarea>
+                    </div>
+
+                    <p id="ecAlert" style="display:none;padding:0.75rem 1rem;border-radius:10px;font-size:0.85rem;margin-bottom:1rem;"></p>
+
+                    <div style="display:flex;gap:0.75rem;">
+                        <button type="button" id="ecSaveBtn" class="btn-primary btn-full"
+                            style="flex:1;padding:0.9rem;font-size:1rem;font-weight:700;border-radius:10px;background:linear-gradient(135deg,#00b4d8,#0077b6);border:none;color:#fff;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(0,180,216,0.3);">
+                            Save Changes
+                        </button>
+                        <button type="button" id="ecCancelBtn"
+                            style="padding:0.9rem 1.5rem;font-size:1rem;font-weight:600;border-radius:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);cursor:pointer;transition:all 0.3s ease;">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `);
+
+    // Event listeners
+    document.getElementById('editCourseCloseBtn').addEventListener('click', closeEditCourseModal);
+    document.getElementById('ecCancelBtn').addEventListener('click', closeEditCourseModal);
+    document.getElementById('ecSaveBtn').addEventListener('click', saveEditedCourse);
+
+    // Close on backdrop click
+    document.getElementById('editCourseModal').addEventListener('click', (e) => {
+        if (e.target.id === 'editCourseModal') closeEditCourseModal();
+    });
+}
+
+function closeEditCourseModal() {
+    const modal = document.getElementById('editCourseModal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function editCourse(courseId) {
+    if (!courseId) return;
+
+    ensureEditCourseModal();
+
+    const alertEl = document.getElementById('ecAlert');
+    alertEl.style.display = 'none';
+
+    try {
+        const course = await api.getCourse(courseId);
+        if (!course) {
+            showNotification('Course not found.');
+            return;
+        }
+
+        document.getElementById('ecId').value = course._id || course.id;
+        document.getElementById('ecTitle').value = course.title || '';
+        document.getElementById('ecQuarter').value = course.quarter || 'Q1';
+        document.getElementById('ecDifficulty').value = course.difficulty || 'beginner';
+        document.getElementById('ecStatus').value = course.status || 'published';
+        document.getElementById('ecDuration').value = course.duration || '';
+        document.getElementById('ecDesc').value = course.description || '';
+
+        document.getElementById('editCourseModal').classList.add('active');
+
+    } catch (err) {
+        console.error('Failed to load course for editing:', err);
+        showNotification('Failed to load course: ' + err.message);
+    }
+}
+
+async function saveEditedCourse() {
+    const id = document.getElementById('ecId').value;
+    const alertEl = document.getElementById('ecAlert');
+    const saveBtn = document.getElementById('ecSaveBtn');
+
+    const data = {
+        title: document.getElementById('ecTitle').value.trim(),
+        quarter: document.getElementById('ecQuarter').value,
+        difficulty: document.getElementById('ecDifficulty').value,
+        status: document.getElementById('ecStatus').value,
+        duration: document.getElementById('ecDuration').value.trim(),
+        description: document.getElementById('ecDesc').value.trim(),
+    };
+
+    if (!data.title) {
+        alertEl.textContent = 'Course title is required.';
+        alertEl.style.cssText = 'display:block;background:rgba(239,68,68,0.15);color:#fca5a5;padding:0.75rem 1rem;border-radius:10px;font-size:0.85rem;margin-bottom:1rem;';
+        return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+    alertEl.style.display = 'none';
+
+    try {
+        await api.request(`/courses/${id}`, { method: 'PUT', body: data });
+
+        alertEl.textContent = '✅ Course updated successfully!';
+        alertEl.style.cssText = 'display:block;background:rgba(16,185,129,0.15);color:#6ee7b7;padding:0.75rem 1rem;border-radius:10px;font-size:0.85rem;margin-bottom:1rem;';
+
+        // Refresh the modules grid after a brief moment
+        setTimeout(async () => {
+            closeEditCourseModal();
+            await renderModules();
+        }, 800);
+
+    } catch (err) {
+        alertEl.textContent = 'Save failed: ' + (err.message || 'Unknown error');
+        alertEl.style.cssText = 'display:block;background:rgba(239,68,68,0.15);color:#fca5a5;padding:0.75rem 1rem;border-radius:10px;font-size:0.85rem;margin-bottom:1rem;';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Changes';
+    }
+}
+
+// ================================
 // LMS SYSTEM
 // ================================
 
@@ -1376,8 +1591,8 @@ async function openModule(moduleId) {
         // Load overview section by default
         switchLMSSection('overview');
 
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Scroll gracefully to the LMS section
+        lmsSection.scrollIntoView({ behavior: 'smooth' });
 
     } catch (error) {
         showNotification('Failed to load course details.');
