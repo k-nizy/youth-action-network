@@ -33,6 +33,7 @@ const memberDashboard = (function () {
   async function loadMetrics(user) {
     try {
       const enrollments = await api.getMyEnrollments();
+      const allCourses = await api.getCourses().catch(() => []);
       let events = [];
       try { events = await api.getEvents(); } catch (e) { /* events endpoint may not exist */ }
 
@@ -48,6 +49,9 @@ const memberDashboard = (function () {
       loadCoursePreview(enrollments);
       // Profile view course list
       loadCourseList(enrollments);
+
+      // Capacity Building Integration
+      renderCapacityBuilding(allCourses, enrollments);
     } catch (err) {
       console.error('Failed to load metrics:', err);
     }
@@ -113,6 +117,322 @@ const memberDashboard = (function () {
           </div>
         </div>`;
     }).join('');
+  }
+
+  /* ---------- CAPACITY BUILDING MODULES ---------- */
+  let cbState = {
+    selectedQuarter: 'Q1',
+    courses: [],
+    enrollments: []
+  };
+
+  function renderCapacityBuilding(allCourses, enrollments) {
+    cbState.courses = allCourses.filter(c => c.quarter); // Filter out generic courses if any
+    if (cbState.courses.length === 0) {
+      const list = $('#moduleList');
+      if (list) list.innerHTML = `<div class="mdEmptyCard">No capacity building modules found. Ensure the seeding script was run by Admin.</div>`;
+      return; // No capacity courses yet
+    }
+    
+    cbState.enrollments = enrollments;
+
+    bindQuarterTabs();
+    bindViewerUI();
+    
+    // Default to the first quarter or currently selected
+    renderQuarter(cbState.selectedQuarter);
+
+    // Initial Dropdown
+    populateSubmissionModuleDropdown(cbState.selectedQuarter);
+    
+    // Load Submission History
+    loadSubmissionHistory();
+    
+    // Bind Submission Logic if not bound
+    if (!cbState.submissionBound) {
+        bindSubmissionLogic();
+        cbState.submissionBound = true;
+    }
+  }
+
+  function renderQuarter(q) {
+    if ($('#quarterName')) {
+        $('#quarterName').textContent = q === 'Q1' ? 'Quarter 1' : q === 'Q2' ? 'Quarter 2' : q === 'Q3' ? 'Quarter 3' : 'Quarter 4';
+    }
+    
+    $$('.mdQuarterTab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.quarter === q);
+    });
+
+    const list = $('#moduleList');
+    if (!list) return;
+    list.innerHTML = '';
+
+    const quarterCourses = cbState.courses.filter(c => c.quarter === q);
+    
+    if (quarterCourses.length === 0) {
+      list.innerHTML = `<div class="mdEmptyCard">No capability building modules yet for ${q}.</div>`;
+      return;
+    }
+
+    quarterCourses.forEach(course => {
+      const enrolled = cbState.enrollments.find(e => e.course && e.course._id === course._id);
+      const total = course.lessons?.length || 1;
+      const done = enrolled?.completedLessons?.length || 0;
+      const pct = Math.round((done / total) * 100);
+      const completed = pct === 100;
+
+      let videoUrl = '';
+      let lessonId = '';
+      if (course.lessons && course.lessons.length > 0) {
+        videoUrl = course.lessons[0].videoUrl || '';
+        lessonId = course.lessons[0]._id || '';
+      }
+
+      const card = document.createElement("div");
+      card.className = `mdModuleCard`;
+      card.innerHTML = `
+        <div class="mdModuleTop">
+          <div>
+            <div class="mdModuleTitle">${course.title}</div>
+            <div class="mdModuleDesc">${course.description}</div>
+          </div>
+          <div class="mdModuleBadge ${completed ? "completed" : "not-started"}">
+            ${completed ? "Completed" : "Not started"}
+          </div>
+        </div>
+        <div class="mdModuleProgress">
+          <div class="mdModuleProgressRow">
+            <span>Progress</span>
+            <span>${pct}%</span>
+          </div>
+          <div class="mdMiniBar">
+            <div class="mdMiniFill" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div class="mdModuleActions">
+          <button class="btn btn-outline btn-small view-module-btn" data-course-id="${course._id || course.id}" data-lesson-id="${lessonId}">
+            View module
+          </button>
+          <button class="btn btn-primary btn-small complete-module-btn" data-course-id="${course._id || course.id}" data-lesson-id="${lessonId}" ${completed ? "disabled" : ""}>
+            Mark complete
+          </button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    list.querySelectorAll('.view-module-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const btnEl = e.currentTarget;
+        console.log('[LMS] View Module click:', btnEl.dataset.courseId, btnEl.dataset.lessonId);
+        openModuleViewer(btnEl.dataset.courseId, btnEl.dataset.lessonId);
+      });
+    });
+
+    list.querySelectorAll('.complete-module-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const btnEl = e.currentTarget;
+        console.log('[LMS] Mark Complete click:', btnEl.dataset.courseId, btnEl.dataset.lessonId);
+        btnEl.disabled = true;
+        btnEl.textContent = "Marking...";
+        await markLessonComplete(btnEl.dataset.courseId, btnEl.dataset.lessonId);
+        btnEl.textContent = "Mark complete";
+      });
+    });
+  }
+
+  function bindQuarterTabs() {
+    $$('.mdQuarterTab').forEach(btn => {
+      // Prevent multiple binding if called twice
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', () => {
+        cbState.selectedQuarter = newBtn.dataset.quarter;
+        renderQuarter(cbState.selectedQuarter);
+        populateSubmissionModuleDropdown(cbState.selectedQuarter);
+      });
+    });
+  }
+
+  function populateSubmissionModuleDropdown(q) {
+    const select = $('#submissionModule');
+    if (!select) return;
+    
+    // Attempting to maintain previously selected option if valid
+    const prev = select.value;
+    select.innerHTML = '<option value="">Select module…</option>';
+    cbState.courses.filter(c => c.quarter === q).forEach(course => {
+      const opt = document.createElement('option');
+      opt.value = course._id;
+      opt.textContent = course.title;
+      select.appendChild(opt);
+    });
+    
+    if ([...select.options].some(o => o.value === prev)) select.value = prev;
+    
+    // Trigger validation
+    validateSubmissionForm();
+  }
+
+  function openModuleViewer(courseId, lessonId) {
+    console.log('[LMS] openModuleViewer called with target:', courseId, lessonId);
+    console.log('[LMS] Available courses:', cbState.courses.map(c => c._id || c.id));
+    
+    const course = cbState.courses.find(c => String(c._id || c.id) === String(courseId));
+    if (!course) {
+        console.error("[LMS] Course not found in cbState", courseId, cbState.courses);
+        return;
+    }
+
+    const lesson = course.lessons?.find(l => String(l._id || l.id) === String(lessonId)) || course.lessons?.[0];
+    const title = course.title;
+    const url = lesson?.videoUrl || '';
+    const content = lesson?.content || '';
+    const resources = lesson?.resources || [];
+
+    if ($('#viewerTitle')) $('#viewerTitle').textContent = title;
+    
+    const iframe = $('#moduleViewerFrame');
+    const extCard = $('#moduleExternalCard');
+    const extBtn = $('#externalCardLaunchBtn');
+    const newTabBtn = $('#openInNewTabBtn');
+    
+    // Check if it's a Canva or blocked iframe source
+    const isExternalOnly = lesson?.videoUrl && (
+      lesson.videoUrl.includes('canva.com') || 
+      lesson.videoUrl.includes('slideshare')
+    );
+
+    let hasMedia = false;
+
+    if (lesson?.videoUrl) {
+      if (isExternalOnly) {
+        iframe.style.display = 'none';
+        newTabBtn.style.display = 'none'; // Replaced by the big card button
+        extCard.style.display = 'flex';
+        extBtn.href = lesson.videoUrl;
+      } else {
+        extCard.style.display = 'none';
+        newTabBtn.style.display = 'block';
+        iframe.style.display = 'block';
+        iframe.src = encodeURI(lesson.videoUrl);
+        newTabBtn.onclick = () => window.open(lesson.videoUrl, '_blank');
+      }
+      hasMedia = true;
+    } else {
+      iframe.style.display = 'none';
+      extCard.style.display = 'none';
+      newTabBtn.style.display = 'none';
+    }
+
+    const contentArea = $('#moduleContentArea');
+    const emptyState = $('#moduleEmptyState');
+
+    // Handle Text Content & Resources
+    if ((content && content.trim() !== '') || resources.length > 0) {
+        if (contentArea) contentArea.style.display = 'block';
+        
+        const textBox = $('#moduleTextContent');
+        if (textBox) textBox.innerHTML = content || '';
+
+        const resWrapper = $('#moduleResourcesWrapper');
+        const resList = $('#moduleResourcesList');
+        if (resWrapper && resList) {
+            if (resources.length > 0) {
+                resWrapper.style.display = 'block';
+                resList.innerHTML = resources.map((r, index) => {
+                    const url = typeof r === 'string' ? r : r?.url;
+                    const title = typeof r === 'string' ? `Resource Link ${index + 1}` : r?.title || `Resource Link ${index + 1}`;
+                    return `<li><a href="${url}" target="_blank" style="color:#007bff; text-decoration:none; display:flex; align-items:center; gap:5px;">
+                        📄 ${title}
+                    </a></li>`;
+                }).join('');
+            } else {
+                resWrapper.style.display = 'none';
+                resList.innerHTML = '';
+            }
+        }
+        hasMedia = true;
+    } else {
+        if (contentArea) contentArea.style.display = 'none';
+    }
+
+    // Handle completely empty State
+    if (!hasMedia) {
+        if (emptyState) emptyState.style.display = 'flex';
+    } else {
+        if (emptyState) emptyState.style.display = 'none';
+    }
+    
+    const completeBtn = $('#markCompleteBtn');
+    if (completeBtn) {
+      completeBtn.dataset.courseId = courseId;
+      completeBtn.dataset.lessonId = lessonId || '';
+      
+      const enrolled = cbState.enrollments.find(e => e.course && e.course._id === courseId);
+      const isDone = enrolled?.completedLessons?.includes(lessonId);
+      completeBtn.disabled = !!isDone;
+    }
+    
+    $('#moduleViewerModal')?.classList.add('active');
+  }
+
+  async function markLessonComplete(courseId, lessonId) {
+    if (!courseId || !lessonId) return;
+    
+    let enrolled = cbState.enrollments.find(e => e.course && (String(e.course._id) === String(courseId) || String(e.course.id) === String(courseId)));
+    if (!enrolled) {
+      await api.enrollInCourse(courseId).catch(console.error);
+    }
+    
+    try {
+      await api.updateLessonProgress(courseId, lessonId);
+      cbState.enrollments = await api.getMyEnrollments();
+      renderQuarter(cbState.selectedQuarter);
+      $('#moduleViewerModal')?.classList.remove('active');
+    } catch (err) {
+      console.error('Failed to mark complete', err);
+    }
+  }
+
+  function bindViewerUI() {
+    const completeBtn = $('#markCompleteBtn');
+    if (completeBtn) {
+        // Cloning prevents multi-bindings
+        const newBtn = completeBtn.cloneNode(true);
+        completeBtn.parentNode.replaceChild(newBtn, completeBtn);
+        newBtn.addEventListener('click', (e) => {
+            const btnEl = e.target;
+            btnEl.disabled = true;
+            btnEl.textContent = 'Marking...';
+            markLessonComplete(btnEl.dataset.courseId, btnEl.dataset.lessonId);
+            btnEl.textContent = "Mark As Complete";
+        });
+    }
+    
+    const openBtn = $('#openInNewTabBtn');
+    if (openBtn) {
+        const newBtn = openBtn.cloneNode(true);
+        openBtn.parentNode.replaceChild(newBtn, openBtn);
+        newBtn.addEventListener('click', (e) => {
+            const url = e.target.dataset.url || $('#moduleViewerFrame')?.src;
+            if (url && url !== window.location.href && !url.endsWith('profile.html')) {
+                window.open(url, '_blank');
+            }
+        });
+    }
+
+    $$('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if(btn.dataset.close === "moduleViewerModal") {
+            // Stop iframe video by removing src
+            if ($('#moduleViewerFrame')) $('#moduleViewerFrame').src = '';
+        }
+        const target = $('#' + btn.dataset.close);
+        if (target) target.classList.remove('active');
+      });
+    });
   }
 
   /* ---------- LOAD APPLICATIONS ---------- */
@@ -291,10 +611,33 @@ const memberDashboard = (function () {
     }
   }
 
+  /* ---------- SIDEBAR TOGGLE ---------- */
+  function initSidebarToggle() {
+    const sidebar = $('#adminSidebar');
+    const overlay = $('#sidebarOverlay');
+    const menuBtn = $('#menuBtn');
+
+    if (!sidebar || !overlay || !menuBtn) return;
+
+    function open() {
+      sidebar.classList.add('open');
+      overlay.classList.add('active');
+    }
+    function close() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+
+    menuBtn.addEventListener('click', open);
+    overlay.addEventListener('click', close);
+    $$('.admin-nav button').forEach(btn => btn.addEventListener('click', close));
+  }
+
   /* ---------- INIT ---------- */
   async function init() {
     initNav();
     initModal();
+    initSidebarToggle();
 
     const user = await checkAuth();
     if (!user) return; // If not authed or admin-redirected, stop here
@@ -333,6 +676,396 @@ const memberDashboard = (function () {
     // Initial view routing
     checkInitialView();
   }
+
+  /* ---------- ASSIGNMENT SUBMISSION LOGIC ---------- */
+  let currentFile = null;
+
+  function bindSubmissionLogic() {
+    const dropzone = $('#dropzone');
+    const fileInput = $('#fileInput');
+    const submitBtn = $('#submitAssignmentBtn');
+    const quarterSelect = $('#submissionQuarter');
+    const moduleSelect = $('#submissionModule');
+
+    if (!dropzone || !fileInput || !submitBtn) return;
+
+    // Trigger file select on click
+    dropzone.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evtName => {
+      dropzone.addEventListener(evtName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(evtName => {
+      dropzone.addEventListener(evtName, () => dropzone.classList.add('dragover'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(evtName => {
+      dropzone.addEventListener(evtName, () => dropzone.classList.remove('dragover'), false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files.length) handleFileSelect(files[0]);
+    });
+
+    fileInput.addEventListener('change', function() {
+      if (this.files.length) handleFileSelect(this.files[0]);
+    });
+
+    // Validations on select change
+    quarterSelect.addEventListener('change', () => {
+      populateSubmissionModuleDropdown(quarterSelect.value);
+    });
+    
+    moduleSelect.addEventListener('change', validateSubmissionForm);
+
+    // Submit handler
+    submitBtn.addEventListener('click', handleAssignmentSubmit);
+  }
+
+  function handleFileSelect(file) {
+    if (!file) return;
+    
+    const maxMb = 50;
+    if (file.size > maxMb * 1024 * 1024) {
+      showSubmissionAlert(`File too large. Maximum size is ${maxMb}MB.`, 'error');
+      return;
+    }
+
+    currentFile = file;
+    const preview = $('#filePreview');
+    if (preview) {
+      preview.innerHTML = `
+        <div style="background:#f0f9ff; border:1px solid #b6e3ff; padding:10px; border-radius:8px; margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+          <div><span style="font-size:1.2rem; margin-right:8px;">📄</span> <strong>${file.name}</strong> (${Math.round(file.size / 1024)} KB)</div>
+          <button id="removeFileBtn" style="background:none; border:none; cursor:pointer; color:#ef4444; font-weight:bold;">×</button>
+        </div>
+      `;
+      $('#removeFileBtn').addEventListener('click', () => {
+        currentFile = null;
+        $('#fileInput').value = '';
+        preview.innerHTML = '';
+        validateSubmissionForm();
+      });
+    }
+    
+    validateSubmissionForm();
+    showSubmissionAlert('', ''); // Clear errors
+  }
+
+  function validateSubmissionForm() {
+    const moduleSelect = $('#submissionModule');
+    const submitBtn = $('#submitAssignmentBtn');
+    if (!moduleSelect || !submitBtn) return;
+
+    if (moduleSelect.value && currentFile) {
+      submitBtn.disabled = false;
+    } else {
+      submitBtn.disabled = true;
+    }
+  }
+
+  function showSubmissionAlert(msg, type) {
+    const alertEl = $('#submissionAlert');
+    if (!alertEl) return;
+    if (!msg) {
+      alertEl.className = 'mdAlert hidden';
+      alertEl.textContent = '';
+      return;
+    }
+    alertEl.textContent = msg;
+    alertEl.className = `mdAlert ${type}`;
+  }
+
+  async function handleAssignmentSubmit() {
+    const moduleSelect = $('#submissionModule');
+    const quarterSelect = $('#submissionQuarter');
+    const submitBtn = $('#submitAssignmentBtn');
+
+    if (!currentFile || !moduleSelect.value) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading...';
+    showSubmissionAlert('', '');
+
+    try {
+      // 1. Upload to Cloudinary
+      const uploadResult = await api.uploadFile(currentFile);
+      
+      // 2. Submit Assignment Record
+      submitBtn.textContent = 'Submitting...';
+      const submissionData = {
+        courseId: moduleSelect.value,
+        quarter: quarterSelect.value,
+        fileUrl: uploadResult.url,
+        fileName: currentFile.name,
+        fileFormat: uploadResult.format || currentFile.name.split('.').pop()
+      };
+
+      await api.submitAssignmentToCourse(submissionData);
+      
+      showSubmissionAlert('Assignment submitted successfully!', 'success');
+      
+      // Reset form
+      currentFile = null;
+      $('#fileInput').value = '';
+      if ($('#filePreview')) $('#filePreview').innerHTML = '';
+      validateSubmissionForm();
+      
+      // Refresh history
+      loadSubmissionHistory();
+      
+      setTimeout(() => showSubmissionAlert('', ''), 5000);
+    } catch (err) {
+      console.error('Submission failed:', err);
+      showSubmissionAlert(err.message || 'Failed to submit assignment. Please try again.', 'error');
+    } finally {
+      submitBtn.textContent = 'Submit';
+      validateSubmissionForm();
+    }
+  }
+
+  async function loadSubmissionHistory() {
+    const historyContainer = $('#submissionHistory');
+    if (!historyContainer) return;
+
+    try {
+      const submissions = await api.getMySubmissions();
+      
+      if (!submissions || submissions.length === 0) {
+        historyContainer.innerHTML = '<p style="color:var(--text-secondary); font-size:0.9rem;">No recent submissions.</p>';
+        return;
+      }
+
+      historyContainer.innerHTML = submissions.slice(0, 5).map(sub => {
+        const date = new Date(sub.createdAt).toLocaleDateString();
+        const statusColor = sub.status === 'graded' ? '#10b981' : sub.status === 'reviewed' ? '#3b82f6' : '#f59e0b';
+        return `
+          <div style="padding:10px 0; border-bottom:1px solid #eee; font-size:0.9rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <strong style="color:var(--secondary-color); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width:60%;" title="${sub.course?.title || 'Unknown Course'}">${sub.course?.title || 'Unknown Course'}</strong>
+              <span style="color:${statusColor}; font-weight:600; font-size:0.8rem; text-transform:uppercase;">${sub.status}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:var(--text-secondary); font-size:0.8rem;">
+              <span style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width:70%;" title="${sub.fileName}">📎 ${sub.fileName}</span>
+              <span>${date}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error('Failed to load history:', err);
+    }
+  }
+
+    const reportBtn = $('#generateReportBtn');
+    if (reportBtn) {
+      reportBtn.addEventListener('click', async () => {
+        const period = $('#reportPeriiod')?.value || 'all';
+        const preview = $('#reportPreview');
+
+        // Visual loading state
+        reportBtn.disabled = true;
+        reportBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">⏳ Generating…</span>';
+        if (preview) preview.innerHTML = '';
+
+        try {
+          const [submissions, enrollments] = await Promise.all([
+            api.getMySubmissions().catch(() => []),
+            api.getMyEnrollments().catch(() => [])
+          ]);
+
+          // Filter by quarter
+          const filtSubs = period === 'all' ? submissions : submissions.filter(s => s.quarter === period);
+          const filtEnr  = period === 'all' ? enrollments : enrollments.filter(e => {
+            const q = e.course?.quarter;
+            return !q || q === period;
+          });
+
+          const periodLabel = period === 'all' ? 'All Quarters' : `Quarter ${period.replace('Q','')}`;
+          const now = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+
+          // Helper to style status
+          const statusChip = (s) => {
+            if (s === 'graded')   return `<span style="background:#06d6a020;color:#059669;padding:2px 8px;border-radius:10px;font-size:0.78rem;font-weight:700;">GRADED</span>`;
+            if (s === 'reviewed') return `<span style="background:#3b82f620;color:#2563eb;padding:2px 8px;border-radius:10px;font-size:0.78rem;font-weight:700;">REVIEWED</span>`;
+            return `<span style="background:#f59e0b20;color:#d97706;padding:2px 8px;border-radius:10px;font-size:0.78rem;font-weight:700;">PENDING</span>`;
+          };
+
+          // Build report rows
+          const rows = filtSubs.map(sub => {
+            const enr = filtEnr.find(e => e.course && String(e.course._id) === String(sub.course?._id));
+            const total = enr?.course?.lessons?.length || 0;
+            const done  = enr?.completedLessons?.length || 0;
+            const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+            return { sub, pct };
+          });
+
+          // Also include enrolled courses with no submission
+          const unsubmittedEnr = filtEnr.filter(e => {
+            if (!e.course) return false;
+            return !filtSubs.some(s => String(s.course?._id) === String(e.course._id));
+          });
+
+          // Render HTML report
+          let reportHTML = `
+            <div style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;margin-top:12px;">
+              <!-- Header -->
+              <div style="background:linear-gradient(135deg,#0e2954 0%,#00B4D8 100%);color:#fff;padding:18px 20px;">
+                <div style="font-weight:800;font-size:1.1rem;">📊 Progress Report · ${periodLabel}</div>
+                <div style="font-size:0.8rem;opacity:0.8;margin-top:2px;">Generated ${now}</div>
+              </div>
+
+              <!-- Summary Strip -->
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid #e2e8f0;">
+                <div style="padding:12px 16px;text-align:center;border-right:1px solid #e2e8f0;">
+                  <div style="font-size:1.5rem;font-weight:800;color:#0e2954;">${filtSubs.length}</div>
+                  <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Submissions</div>
+                </div>
+                <div style="padding:12px 16px;text-align:center;border-right:1px solid #e2e8f0;">
+                  <div style="font-size:1.5rem;font-weight:800;color:#059669;">${filtSubs.filter(s=>s.status==='graded').length}</div>
+                  <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Graded</div>
+                </div>
+                <div style="padding:12px 16px;text-align:center;">
+                  <div style="font-size:1.5rem;font-weight:800;color:#2563eb;">${filtEnr.length}</div>
+                  <div style="font-size:0.75rem;color:#64748b;margin-top:2px;">Active Modules</div>
+                </div>
+              </div>`;
+
+          if (rows.length > 0) {
+            reportHTML += `
+              <!-- Submissions Table -->
+              <div style="padding:14px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+                <strong style="font-size:0.85rem;color:#0e2954;">Assignment Submissions</strong>
+              </div>
+              <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+                  <thead>
+                    <tr style="background:#f1f5f9;color:#475569;font-weight:700;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.04em;">
+                      <th style="padding:8px 14px;text-align:left;">Course</th>
+                      <th style="padding:8px 14px;text-align:center;">Quarter</th>
+                      <th style="padding:8px 14px;text-align:center;">Progress</th>
+                      <th style="padding:8px 14px;text-align:center;">Status</th>
+                      <th style="padding:8px 14px;text-align:center;">Grade</th>
+                      <th style="padding:8px 14px;text-align:left;">Feedback</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${rows.map(({ sub, pct }, i) => `
+                      <tr style="border-bottom:1px solid #f1f5f9;${i%2===1 ? 'background:#f8fafc;' : ''}">
+                        <td style="padding:10px 14px;font-weight:600;color:#1e293b;">${sub.course?.title || 'Unknown'}</td>
+                        <td style="padding:10px 14px;text-align:center;color:#64748b;">${sub.quarter || '-'}</td>
+                        <td style="padding:10px 14px;text-align:center;">
+                          <div style="display:flex;align-items:center;gap:6px;justify-content:center;">
+                            <div style="width:56px;height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                              <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,#00B4D8,#0D47A1);border-radius:4px;"></div>
+                            </div>
+                            <span style="font-size:0.76rem;font-weight:700;color:#475569;">${pct}%</span>
+                          </div>
+                        </td>
+                        <td style="padding:10px 14px;text-align:center;">${statusChip(sub.status)}</td>
+                        <td style="padding:10px 14px;text-align:center;font-weight:700;color:${sub.grade != null ? '#059669' : '#94a3b8'};">${sub.grade != null ? sub.grade+'/100' : '–'}</td>
+                        <td style="padding:10px 14px;color:#64748b;font-size:0.78rem;">${sub.feedback || '<em>No feedback yet</em>'}</td>
+                      </tr>`).join('')}
+                  </tbody>
+                </table>
+              </div>`;
+          }
+
+          if (unsubmittedEnr.length > 0) {
+            reportHTML += `
+              <!-- In-Progress Modules -->
+              <div style="padding:14px 16px;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+                <strong style="font-size:0.85rem;color:#0e2954;">In Progress (No Submission Yet)</strong>
+              </div>
+              ${unsubmittedEnr.map((e, i) => {
+                const total = e.course?.lessons?.length || 0;
+                const done  = e.completedLessons?.length || 0;
+                const pct   = total > 0 ? Math.round((done/total)*100) : 0;
+                return `<div style="padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f1f5f9;font-size:0.84rem;">
+                  <span style="font-weight:600;color:#1e293b;">${e.course?.title || 'Unknown'}</span>
+                  <span style="color:#64748b;">${e.course?.quarter || ''}</span>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:60px;height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
+                      <div style="width:${pct}%;height:100%;background:#00B4D8;border-radius:4px;"></div>
+                    </div>
+                    <span style="font-size:0.76rem;font-weight:700;color:#475569;">${pct}%</span>
+                  </div>
+                </div>`;
+              }).join('')}`;
+          }
+
+          if (rows.length === 0 && unsubmittedEnr.length === 0) {
+            reportHTML += `<div style="padding:30px;text-align:center;color:#94a3b8;font-size:0.88rem;">No data found for ${periodLabel}.</div>`;
+          }
+
+          // Download button
+          reportHTML += `
+              <div style="padding:12px 16px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 12px 12px;">
+                <button id="downloadReportCsvBtn" style="padding:7px 16px;border-radius:8px;border:1.5px solid #00B4D8;background:#fff;color:#00B4D8;font-weight:700;font-size:0.82rem;cursor:pointer;">⬇ Download CSV</button>
+              </div>
+            </div>`;
+
+          if (preview) preview.innerHTML = reportHTML;
+
+          // Wire up CSV download
+          const csvBtn = document.getElementById('downloadReportCsvBtn');
+          if (csvBtn) {
+            csvBtn.addEventListener('click', () => {
+              const headers = ['Course','Quarter','Module Progress %','Submission Status','Grade /100','Feedback'];
+              const csvRows = rows.map(({ sub, pct }) => [
+                `"${(sub.course?.title||'').replace(/"/g,'""')}"`,
+                sub.quarter || '',
+                pct,
+                sub.status || 'pending',
+                sub.grade ?? '',
+                `"${(sub.feedback||'').replace(/"/g,'""')}"`
+              ]);
+              unsubmittedEnr.forEach(e => {
+                const total = e.course?.lessons?.length || 0;
+                const done  = e.completedLessons?.length || 0;
+                const pct   = total > 0 ? Math.round((done/total)*100) : 0;
+                csvRows.push([
+                  `"${(e.course?.title||'').replace(/"/g,'""')}"`,
+                  e.course?.quarter || '',
+                  pct,
+                  'not submitted',
+                  '',
+                  ''
+                ]);
+              });
+
+              const csvContent = [headers.join(','), ...csvRows.map(r => r.join(','))].join('\n');
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `YAN_Progress_Report_${period}_${new Date().toISOString().split('T')[0]}.csv`;
+              link.click();
+              URL.revokeObjectURL(url);
+            });
+          }
+
+          reportBtn.innerHTML = 'Generate Report';
+          reportBtn.disabled = false;
+          showSubmissionAlert('Report generated successfully!', 'success');
+          setTimeout(() => showSubmissionAlert('', ''), 4000);
+
+        } catch (err) {
+          console.error('Report generation failed:', err);
+          reportBtn.innerHTML = 'Generate Report';
+          reportBtn.disabled = false;
+          showSubmissionAlert('Failed to generate report. Please try again.', 'error');
+        }
+      });
+    }
+
 
   return { init };
 })();
