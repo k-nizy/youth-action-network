@@ -151,6 +151,26 @@ exports.register = async (req, res, next) => {
             html: welcomeHtml
         }).catch(err => console.error('Welcome email sending failed:', err));
 
+        // Admin Notification Email
+        const adminEmail = 'yaneip26@gmail.com'; 
+        const adminNotificationHtml = `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2 style="color: #03045E;">New User Registration on YAN</h2>
+            <p><strong>Name:</strong> ${user.name}</p>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Role:</strong> <span style="text-transform: capitalize;">${user.role}</span></p>
+            <p><strong>Organization:</strong> ${user.organization || 'N/A'}</p>
+            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">This is an automated notification from the YAN Platform.</p>
+        </div>`;
+
+        sendEmail({
+            email: adminEmail,
+            subject: `New YAN Registration: ${user.name}`,
+            message: `A new user has registered on YAN.\nName: ${user.name}\nEmail: ${user.email}\nRole: ${user.role}\nOrganization: ${user.organization || 'N/A'}`,
+            html: adminNotificationHtml
+        }).catch(err => console.error('Admin notification email failed:', err));
+
         const accessToken = signAccessToken(user._id);
 
         // Attach refresh token (cookie + DB)
