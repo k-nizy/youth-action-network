@@ -1,0 +1,411 @@
+{
+  "success": true,
+  "count": 13,
+  "data": [
+    {
+      "_id": "69a62400c0c6f39ab412d3b3",
+      "title": "Youth Advocacy & Policy",
+      "description": "Learn how to advocate for youth-friendly policies, engage with policymakers, and create impactful campaigns that amplify young voices in governance.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "intermediate",
+      "duration": "3 Weeks",
+      "quarter": "Q1",
+      "createdAt": "2026-03-02T23:57:52.58Z",
+      "updatedAt": "2026-03-03T00:04:36.731Z",
+      "__v": 0,
+      "category": "advocacy",
+      "lessons": [
+        {
+          "_id": "69a62400c0c6f39ab412d3b5",
+          "course": "69a62400c0c6f39ab412d3b3",
+          "title": "Introduction",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3b7",
+          "course": "69a62400c0c6f39ab412d3b3",
+          "title": "Core Concepts",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3b9",
+          "course": "69a62400c0c6f39ab412d3b3",
+          "title": "Practical Application",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69a62400c0c6f39ab412d3b3"
+    },
+    {
+      "_id": "69a62400c0c6f39ab412d3bc",
+      "title": "Digital Skills for Impact",
+      "description": "Master essential digital tools including data visualization, social media strategy, and online collaboration platforms to maximize your organization impact.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "beginner",
+      "duration": "2 Weeks",
+      "quarter": "Q1",
+      "createdAt": "2026-03-02T23:57:52.594Z",
+      "updatedAt": "2026-03-03T00:04:36.733Z",
+      "__v": 0,
+      "category": "digital skills",
+      "lessons": [
+        {
+          "_id": "69a62400c0c6f39ab412d3be",
+          "course": "69a62400c0c6f39ab412d3bc",
+          "title": "Introduction",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3c0",
+          "course": "69a62400c0c6f39ab412d3bc",
+          "title": "Core Concepts",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3c2",
+          "course": "69a62400c0c6f39ab412d3bc",
+          "title": "Practical Application",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69a62400c0c6f39ab412d3bc"
+    },
+    {
+      "_id": "69a62400c0c6f39ab412d3c5",
+      "title": "Health Program Management",
+      "description": "Comprehensive training on designing, implementing, and evaluating community health programs with a focus on youth-led health initiatives in Rwanda.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "advanced",
+      "duration": "4 Weeks",
+      "quarter": "Q1",
+      "createdAt": "2026-03-02T23:57:52.6Z",
+      "updatedAt": "2026-03-03T00:04:36.735Z",
+      "__v": 0,
+      "category": "health",
+      "lessons": [
+        {
+          "_id": "69a62400c0c6f39ab412d3c7",
+          "course": "69a62400c0c6f39ab412d3c5",
+          "title": "Introduction",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3c9",
+          "course": "69a62400c0c6f39ab412d3c5",
+          "title": "Core Concepts",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3cb",
+          "course": "69a62400c0c6f39ab412d3c5",
+          "title": "Practical Application",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69a62400c0c6f39ab412d3c5"
+    },
+    {
+      "_id": "69a62400c0c6f39ab412d3ce",
+      "title": "Grant Writing & Fundraising",
+      "description": "Develop professional grant writing skills, learn fundraising strategies, and build sustainable financial models for youth-led organizations.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "intermediate",
+      "duration": "3 Weeks",
+      "quarter": "Q1",
+      "createdAt": "2026-03-02T23:57:52.605Z",
+      "updatedAt": "2026-03-03T00:04:36.737Z",
+      "__v": 0,
+      "category": "leadership",
+      "lessons": [
+        {
+          "_id": "69a62400c0c6f39ab412d3d0",
+          "course": "69a62400c0c6f39ab412d3ce",
+          "title": "Introduction",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3d2",
+          "course": "69a62400c0c6f39ab412d3ce",
+          "title": "Core Concepts",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3d4",
+          "course": "69a62400c0c6f39ab412d3ce",
+          "title": "Practical Application",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69a62400c0c6f39ab412d3ce"
+    },
+    {
+      "_id": "69a62400c0c6f39ab412d3d7",
+      "title": "Community Organizing 201",
+      "description": "Advanced techniques for community mobilization, stakeholder mapping, coalition building, and creating sustainable grassroots movements.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "advanced",
+      "duration": "3 Weeks",
+      "quarter": "Q2",
+      "createdAt": "2026-03-02T23:57:52.612Z",
+      "updatedAt": "2026-03-03T00:04:36.739Z",
+      "__v": 0,
+      "category": "advocacy",
+      "lessons": [
+        {
+          "_id": "69a62400c0c6f39ab412d3d9",
+          "course": "69a62400c0c6f39ab412d3d7",
+          "title": "Introduction",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3db",
+          "course": "69a62400c0c6f39ab412d3d7",
+          "title": "Core Concepts",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69a62400c0c6f39ab412d3dd",
+          "course": "69a62400c0c6f39ab412d3d7",
+          "title": "Practical Application",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69a62400c0c6f39ab412d3d7"
+    },
+    {
+      "_id": "69b53926a6ab405c30b5cf1e",
+      "title": "Introduction to Youth Leadership",
+      "description": "A comprehensive onboarding module for new YAN members covering the basics of leadership, organizing, and community development.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "beginner",
+      "duration": "2 Weeks",
+      "quarter": "Q1",
+      "createdAt": "2026-03-14T10:32:06.794Z",
+      "updatedAt": "2026-03-14T10:32:06.794Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69b53926a6ab405c30b5cf20",
+          "course": "69b53926a6ab405c30b5cf1e",
+          "title": "What is Youth Leadership?",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69b53926a6ab405c30b5cf22",
+          "course": "69b53926a6ab405c30b5cf1e",
+          "title": "Community Organizing 101",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69b53926a6ab405c30b5cf24",
+          "course": "69b53926a6ab405c30b5cf1e",
+          "title": "Project Management Basics",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69b53926a6ab405c30b5cf1e"
+    },
+    {
+      "_id": "69bedaca090e55a7d05d38d2",
+      "title": "YAN Capacity Building - Q1",
+      "description": "Comprehensive capacity building module including Leadership, Resilience, and Soft Skills resources from the YAN-EIP curriculum.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "intermediate",
+      "duration": "4 Weeks",
+      "quarter": "Q1",
+      "createdAt": "2026-03-21T17:52:10.582Z",
+      "updatedAt": "2026-03-21T17:52:10.582Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69bedaca090e55a7d05d38d4",
+          "course": "69bedaca090e55a7d05d38d2",
+          "title": "Leadership",
+          "order": 1,
+          "isQuiz": false
+        },
+        {
+          "_id": "69bedaca090e55a7d05d38d6",
+          "course": "69bedaca090e55a7d05d38d2",
+          "title": "Resilience",
+          "order": 2,
+          "isQuiz": false
+        },
+        {
+          "_id": "69bedaca090e55a7d05d38d8",
+          "course": "69bedaca090e55a7d05d38d2",
+          "title": "Soft Skills",
+          "order": 3,
+          "isQuiz": false
+        }
+      ],
+      "id": "69bedaca090e55a7d05d38d2"
+    },
+    {
+      "_id": "69bedaca090e55a7d05d38da",
+      "title": "YAN Capacity Building - Q2",
+      "description": "Quarter 2 capacity building focusing on Case Studies and Project Design and Management Training.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "intermediate",
+      "duration": "4 Weeks",
+      "quarter": "Q2",
+      "createdAt": "2026-03-21T17:52:10.592Z",
+      "updatedAt": "2026-03-21T17:52:10.592Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69bedaca090e55a7d05d38dc",
+          "course": "69bedaca090e55a7d05d38da",
+          "title": "Project Design & Management",
+          "order": 1,
+          "isQuiz": false
+        }
+      ],
+      "id": "69bedaca090e55a7d05d38da"
+    },
+    {
+      "_id": "69bedaca090e55a7d05d38de",
+      "title": "YAN Capacity Building - Q3",
+      "description": "Quarter 3 capacity building focusing on Implementation Case Studies and Assignments.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "intermediate",
+      "duration": "4 Weeks",
+      "quarter": "Q3",
+      "createdAt": "2026-03-21T17:52:10.594Z",
+      "updatedAt": "2026-03-21T17:52:10.594Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69bedaca090e55a7d05d38e0",
+          "course": "69bedaca090e55a7d05d38de",
+          "title": "Implementation & Case Study 3",
+          "order": 1,
+          "isQuiz": false
+        }
+      ],
+      "id": "69bedaca090e55a7d05d38de"
+    },
+    {
+      "_id": "69bedaca090e55a7d05d38e2",
+      "title": "YAN Capacity Building - Q4",
+      "description": "Quarter 4 capacity building focusing on Final Case Studies and Capstone Assignments.",
+      "createdBy": "69a22398050b4f97a15cc100",
+      "status": "published",
+      "difficulty": "advanced",
+      "duration": "4 Weeks",
+      "quarter": "Q4",
+      "createdAt": "2026-03-21T17:52:10.597Z",
+      "updatedAt": "2026-03-21T17:52:10.597Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69bedaca090e55a7d05d38e4",
+          "course": "69bedaca090e55a7d05d38e2",
+          "title": "Capstone & Case Study 4",
+          "order": 1,
+          "isQuiz": false
+        }
+      ],
+      "id": "69bedaca090e55a7d05d38e2"
+    },
+    {
+      "_id": "69c16f8ccc07eacce5f2ab06",
+      "title": "Leadership Youth NGOs",
+      "description": "Introduction/Foundations.",
+      "createdBy": "69a0d8043dc19fa6dbbdae64",
+      "status": "published",
+      "difficulty": "beginner",
+      "duration": "2 hours",
+      "quarter": "Q1",
+      "category": "Capacity Building - Q1",
+      "createdAt": "2026-03-23T16:51:24.994Z",
+      "updatedAt": "2026-03-23T16:51:24.994Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69c16f8dcc07eacce5f2ab08",
+          "course": "69c16f8ccc07eacce5f2ab06",
+          "title": "Module 1",
+          "order": 1,
+          "isQuiz": false
+        }
+      ],
+      "id": "69c16f8ccc07eacce5f2ab06"
+    },
+    {
+      "_id": "69c16f8dcc07eacce5f2ab0b",
+      "title": "Resilience Adaptive Mindset",
+      "description": "Core concepts and practice.",
+      "createdBy": "69a0d8043dc19fa6dbbdae64",
+      "status": "published",
+      "difficulty": "beginner",
+      "duration": "2 hours",
+      "quarter": "Q1",
+      "category": "Capacity Building - Q1",
+      "createdAt": "2026-03-23T16:51:25.06Z",
+      "updatedAt": "2026-03-23T16:51:25.06Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69c16f8dcc07eacce5f2ab0d",
+          "course": "69c16f8dcc07eacce5f2ab0b",
+          "title": "Module 2",
+          "order": 1,
+          "isQuiz": false
+        }
+      ],
+      "id": "69c16f8dcc07eacce5f2ab0b"
+    },
+    {
+      "_id": "69c16f8dcc07eacce5f2ab10",
+      "title": "Soft Skills Self Management",
+      "description": "Assignments and reflection.",
+      "createdBy": "69a0d8043dc19fa6dbbdae64",
+      "status": "published",
+      "difficulty": "beginner",
+      "duration": "2 hours",
+      "quarter": "Q1",
+      "category": "Capacity Building - Q1",
+      "createdAt": "2026-03-23T16:51:25.065Z",
+      "updatedAt": "2026-03-23T16:51:25.065Z",
+      "__v": 0,
+      "lessons": [
+        {
+          "_id": "69c16f8dcc07eacce5f2ab12",
+          "course": "69c16f8dcc07eacce5f2ab10",
+          "title": "Module 3",
+          "order": 1,
+          "isQuiz": false
+        }
+      ],
+      "id": "69c16f8dcc07eacce5f2ab10"
+    }
+  ]
+}
