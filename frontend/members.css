@@ -30,6 +30,7 @@
     font-size: 3.5rem;
     background: var(--accent-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 1.5rem;
     font-weight: 800;
@@ -219,6 +220,7 @@
     margin-bottom: 1.5rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -246,6 +248,18 @@
 .member-footer {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.member-impact-rating {
+    flex-shrink: 0;
+}
+
+.member-impact-rating .rating-badge {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .view-profile-btn {
@@ -253,15 +267,16 @@
     align-items: center;
     justify-content: center;
     gap: 0.8rem;
-    width: 100%;
-    padding: 1rem;
+    padding: 0.8rem 1.2rem;
     background: transparent;
     color: #334155;
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.9rem;
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
 .view-profile-btn:hover {
