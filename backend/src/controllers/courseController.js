@@ -39,7 +39,7 @@ exports.getCourses = async (req, res, next) => {
             select: 'name'
         }).populate({
             path: 'lessons',
-            select: 'title order isQuiz'
+            select: 'title order isQuiz videoUrl content resources'
         });
 
         const courses = await query;
