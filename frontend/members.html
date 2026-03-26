@@ -7,6 +7,9 @@
     <title>YAN Members | Youth Advocates Network Rwanda</title>
     <meta name="description"
         content="Meet the organizations and individuals driving change in the Youth Advocates Network Rwanda.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="members.css">
@@ -17,9 +20,8 @@
     <!-- Navigation -->
     <nav class="navbar scrolled" id="navbar">
         <div class="nav-container">
-            <a href="index.html" class="nav-brand" style="text-decoration: none;">
-                <div class="logo-circle"></div>
-                <span class="brand-text">YAN <span class="brand-accent">Rwanda</span></span>
+            <a href="index.html" class="nav-brand" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/logo.png" alt="Youth Advocates Network Logo" style="height: 60px; width: auto; max-width: 250px; object-fit: contain;">
             </a>
 
             <div class="nav-menu" id="navMenu">
@@ -27,7 +29,6 @@
                 <a href="index.html#about" class="nav-link">About</a>
                 <a href="members.html" class="nav-link active">Network</a>
                 <a href="index.html#capacity" class="nav-link">Capacity Building</a>
-                <a href="index.html#opportunities" class="nav-link">Opportunities</a>
                 <a href="index.html#events" class="nav-link">Events</a>
                 <a href="index.html#gallery" class="nav-link">Gallery</a>
                 <a href="index.html#contact" class="nav-link">Contact</a>
@@ -69,6 +70,22 @@
         <section class="members_List" id="membersList">
             <!-- Injected by members.js -->
         </section>
+
+        <!-- Impact Rating Classification -->
+        <section class="impact-rating-section" id="impactRating" style="margin-top: 4rem; margin-bottom: 2rem;">
+            <div class="section-header">
+                <div>
+                    <div class="section-label">Impact Evidence</div>
+                    <h2 class="section-title">Impact Rating Classification</h2>
+                    <p class="section-description">Classification of organizations based on documented scale,
+                        sustainability, and measurable outcomes.</p>
+                </div>
+            </div>
+
+            <div class="impact-rating-grid" id="impactRatingGrid">
+                <!-- Impact rating cards will be populated by JavaScript -->
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -76,10 +93,9 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="nav-brand" style="margin-bottom: 1rem;">
-                        <div class="logo-circle"></div>
-                        <span class="brand-text">YAN <span class="brand-accent">Rwanda</span></span>
-                    </div>
+                    <a href="index.html" class="nav-brand" style="margin-bottom: 1rem; text-decoration: none;">
+                        <img src="assets/logo.png" alt="Youth Advocates Network Logo" style="height: 60px; width: auto; max-width: 250px; object-fit: contain;">
+                    </a>
                     <p class="footer-desc">Empowering youth organizations to create lasting impact through
                         collaboration, capacity building, and innovative solutions.</p>
                 </div>
@@ -89,7 +105,6 @@
                     <a href="index.html#about" class="footer-link">About Us</a>
                     <a href="members.html" class="footer-link">Network</a>
                     <a href="index.html#capacity" class="footer-link">Programs</a>
-                    <a href="index.html#opportunities" class="footer-link">Opportunities</a>
                 </div>
 
                 <div class="footer-links">
