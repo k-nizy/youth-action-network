@@ -47,13 +47,13 @@ exports.createEnrollment = async (req, res, next) => {
         }
 
         // Quarter Locking Logic
-        const currentQuarter = getCurrentQuarter();
-        if (course.quarter !== currentQuarter) {
-            return res.status(403).json({
-                success: false,
-                message: `This course is scheduled for ${course.quarter}. You can only enroll during that quarter (Current: ${currentQuarter}).`
-            });
-        }
+        // const currentQuarter = getCurrentQuarter();
+        // if (course.quarter !== currentQuarter) {
+        //     return res.status(403).json({
+        //         success: false,
+        //         message: `This course is scheduled for ${course.quarter}. You can only enroll during that quarter (Current: ${currentQuarter}).`
+        //     });
+        // }
 
         // Check for existing enrollment
         const existingEnrollment = await Enrollment.findOne({
