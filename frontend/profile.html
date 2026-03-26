@@ -5,12 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>YAN - Member Dashboard</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
   <link rel="stylesheet" href="adminDashboard.css">
-  <link rel="stylesheet" href="memberDashboard.css">
+  <link rel="stylesheet" href="memberDashboard.css?v=2">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="config.js?v=4" defer></script>
-  <script src="apiClient.js?v=4" defer></script>
+  <script src="apiClient.js?v=7" defer></script>
   <script>
     (function() {
       const role = localStorage.getItem('yan_role');
@@ -20,7 +20,7 @@
       if (role === 'applicant') { window.location.href = 'applicant.html'; return; }
     })();
   </script>
-  <script src="memberDashboard.js?v=4" defer></script>
+  <script src="memberDashboard.js?v=7" defer></script>
   <script src="profile.js?v=4" defer></script>
 </head>
 
@@ -70,7 +70,7 @@
       <!-- TOPBAR -->
       <header class="admin-topbar">
         <div class="topbar-left">
-          <button class="menu-btn" id="menuToggle" aria-label="Open menu">☰</button>
+          <button class="menu-btn" id="menuBtn" aria-label="Open menu">☰</button>
           <h1 id="dashboardTitle">Member Dashboard</h1>
         </div>
         <div class="topbar-right">
@@ -119,13 +119,92 @@
             </div>
           </div>
 
-          <!-- ENROLLED COURSES PREVIEW -->
-          <div class="mdPanel" style="margin-top:20px;">
-            <div class="mdPanelHeader">
-              <h3 class="mdPanelTitle">My Enrolled Courses</h3>
+          <!-- CAPACITY BUILDING MODULES -->
+          <style>
+             .mdModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(0,0,0,0.5); padding: 20px; align-items: center; justify-content: center; }
+             .mdModal.active { display: flex !important; }
+             @media (max-width: 800px) {
+                 .mdGrid { grid-template-columns: 1fr !important; display: flex; flex-direction: column; }
+                 .mdStack { width: 100% !important; flex-direction: column !important; }
+                 .mdQuarterTabs { flex-wrap: wrap; justify-content: flex-start; gap: 5px; }
+                 .mdQuarterTab { padding: 8px 12px; font-size: 0.9rem; flex: 1; text-align: center; }
+                 .mdModuleCard { flex-direction: column; padding: 15px !important; }
+                 .mdModuleTop { flex-direction: column !important; align-items: flex-start !important; gap: 10px; }
+                 .mdModuleActions { display: flex; flex-direction: column; width: 100%; gap: 10px; }
+                 .mdModuleActions button { width: 100%; justify-content: center; }
+                 .mdModalCard { width: 100% !important; height: 100vh !important; max-height: 100vh !important; border-radius: 0 !important; margin: 0 !important; top: 0; left: 0; }
+                 .mdViewerFrame { height: 40vh !important; }
+             }
+          </style>
+          <section class="mdGrid" style="margin-top:20px;">
+            <div class="mdPanel">
+                <div class="mdPanelHeader">
+                    <div>
+                        <h2 class="mdPanelTitle" id="quarterName">Quarter 1</h2>
+                        <p class="mdHint" id="quarterRange"></p>
+                    </div>
+                    <div id="quarterStatus"></div>
+                </div>
+
+                <div class="mdQuarterTabs" role="tablist" aria-label="Quarter tabs">
+                    <button type="button" class="mdQuarterTab active" data-quarter="Q1">Q1</button>
+                    <button type="button" class="mdQuarterTab" data-quarter="Q2">Q2</button>
+                    <button type="button" class="mdQuarterTab" data-quarter="Q3">Q3</button>
+                    <button type="button" class="mdQuarterTab" data-quarter="Q4">Q4</button>
+                </div>
+
+                <div class="mdModules" id="moduleList">
+                  <div class="mdEmptyCard">Loading capacity building modules...</div>
+                </div>
             </div>
-            <div id="dashCoursePreview">Loading courses...</div>
-          </div>
+
+            <div class="mdStack">
+                <aside class="mdPanel">
+                    <h3 class="mdPanelTitle">Submit Assignment</h3>
+
+                    <label class="mdLabel" for="submissionQuarter">Quarter</label>
+                    <select id="submissionQuarter" class="mdSelect">
+                        <option value="Q1">Q1</option>
+                        <option value="Q2">Q2</option>
+                        <option value="Q3">Q3</option>
+                        <option value="Q4">Q4</option>
+                    </select>
+
+                    <label class="mdLabel" for="submissionModule">Course</label>
+                    <select id="submissionModule" class="mdSelect">
+                      <option value="">Select module…</option>
+                    </select>
+
+                    <div class="mdDropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload Assignment">
+                        Drag & drop Assignment file here or click to browse
+                        <input class="mdFileInput" id="fileInput" type="file">
+                    </div>
+
+                    <div id="filePreview"></div>
+                    <p id="submissionAlert" class="mdAlert hidden" aria-live="polite"></p>
+
+                    <button type="button" class="btn btn-primary btn-small" id="submitAssignmentBtn" disabled>Submit</button>
+
+                    <h4 class="mdSubtitle" style="margin-top:20px;">Recent Submissions</h4>
+                    <div class="mdHistoryList" id="submissionHistory"></div>
+                </aside>
+
+                <aside class="mdPanel">
+                    <h3 class="mdPanelTitle">Progress Report</h3>
+                    <label class="mdLabel" for="reportPeriiod">Report Period</label>
+                    <select id="reportPeriiod" class="mdSelect">
+                        <option value="all">All Quarters</option>
+                        <option value="Q1">Quarter 1</option>
+                        <option value="Q2">Quarter 2</option>
+                        <option value="Q3">Quarter 3</option>
+                        <option value="Q4">Quarter 4</option>
+                    </select>
+
+                    <button type="button" class="btn btn-outline btn-small" id="generateReportBtn" style="margin-top:10px;">Generate Report</button>
+                    <div class="mdReportPreview" id="reportPreview" style="margin-top:10px;"></div>
+                </aside>
+            </div>
+          </section>
         </section>
 
         <!-- APPLICATIONS VIEW -->
@@ -215,6 +294,61 @@
       </div>
     </div>
   </div>
+
+  <!-- MODULE VIEWER MODAL -->
+  <section class="mdModal" id="moduleViewerModal" aria-hidden="true">
+      <div class="mdModalOverlay" data-close="moduleViewerModal" style="position:absolute; inset:0;"></div>
+      <div class="mdModalCard" style="position:relative; background:#fff; max-width: 900px; width: 95%; max-height: 90vh; border-radius:12px; display:flex; flex-direction:column; box-shadow:0 10px 30px rgba(0,0,0,0.2);">
+          
+          <div class="mdModalHeader" style="padding: 20px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                  <h3 id="viewerTitle" style="margin:0; font-size:1.4rem;">Module Viewer</h3>
+                  <p id="viewerMeta" class="mdHint" style="margin:5px 0 0; color:#666; font-size:0.9rem;"></p>
+              </div>
+              <button data-close="moduleViewerModal" style="background:none; border:none; font-size:1.8rem; cursor:pointer; color:#999;">&times;</button>
+          </div>
+
+          <div class="mdModalBody" style="flex:1; overflow-y:auto; padding:20px; background:#f9f9f9;">
+              <!-- Embedded Video/Presentation -->
+              <iframe id="moduleViewerFrame" class="mdViewerFrame" title="Module content" style="width:100%; height:500px; border:none; border-radius:8px; background:#fff; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.05);"></iframe>
+              
+              <!-- External Link Presentation Card (For Canva/Slides that Block Iframes) -->
+              <div id="moduleExternalCard" style="display:none; width:100%; padding:40px 20px; background:linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius:12px; align-items:center; justify-content:center; flex-direction:column; text-align:center; box-shadow:0 8px 24px rgba(59,130,246,0.3); position:relative; overflow:hidden;">
+                  <h4 style="color:#fff; margin:0 0 10px 0; font-size:1.6rem;">External Presentation</h4>
+                  <p style="color:rgba(255,255,255,0.8); margin:0 0 20px 0; max-width:400px; line-height:1.5;">This module uses an interactive presentation hosted on a secure external platform. Click below to view it in full screen.</p>
+                  <a id="externalCardLaunchBtn" href="#" target="_blank" class="btn btn-primary" style="background:#fff; color:#1e3a8a; border:none; font-weight:700; padding:12px 24px; font-size:1.1rem; box-shadow:0 4px 12px rgba(0,0,0,0.1); border-radius:30px; display:inline-flex; align-items:center; gap:8px;">
+                      Open Presentation <span>↗</span>
+                  </a>
+              </div>
+              
+              <!-- Text Content & Resources Area -->
+              <div id="moduleContentArea" style="display:none; margin-top:20px; background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                  <div id="moduleTextContent" class="longtext" style="color:#333; line-height:1.6;"></div>
+                  
+                  <div id="moduleResourcesWrapper" style="margin-top:20px; display:none;">
+                      <h4 style="margin:0 0 10px; font-size:1.1rem; color:#0e2954;">📚 Lesson Resources</h4>
+                      <ul id="moduleResourcesList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
+                  </div>
+              </div>
+
+              <!-- Fallback Empty State -->
+              <div id="moduleEmptyState" style="display:none; width:100%; padding:40px 20px; background:#f4f7f6; border:1px dashed #ccc; border-radius:8px; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
+                 <div style="font-size:3rem; margin-bottom:15px; opacity:0.8;">📋</div>
+                 <h4 style="color:#333; margin:0 0 8px 0; font-size:1.2rem;">Offline / Self-Directed Module</h4>
+                 <p style="color:#666; margin:0; max-width:400px; line-height:1.5;">This module does not have digital presentation materials. Please mark it as complete once you have fulfilled the offline requirements or attended the session.</p>
+              </div>
+          </div>
+
+          <div class="mdModalFooter" style="padding: 15px 20px; border-top: 1px solid #eee; display:flex; justify-content:space-between; align-items:center; background:#fff; border-radius:0 0 12px 12px;">
+              <button type="button" class="btn btn-outline btn-small" id="openInNewTabBtn" style="display:none;">Open in New Tab</button>
+              <div style="display:flex; gap:10px;">
+                  <button type="button" class="btn btn-outline btn-small" data-close="moduleViewerModal">Cancel</button>
+                  <button type="button" class="btn btn-primary btn-small" id="markCompleteBtn" style="min-width:140px;">Mark As Complete</button>
+              </div>
+          </div>
+
+      </div>
+  </section>
 
 </body>
 
