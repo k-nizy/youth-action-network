@@ -171,9 +171,32 @@ const applicantDashboard = (function () {
     });
   }
 
+  /* ---------- SIDEBAR TOGGLE ---------- */
+  function initSidebarToggle() {
+    const sidebar = $('#adminSidebar');
+    const overlay = $('#sidebarOverlay');
+    const menuBtn = $('#menuBtn');
+
+    if (!sidebar || !overlay || !menuBtn) return;
+
+    function open() {
+      sidebar.classList.add('open');
+      overlay.classList.add('active');
+    }
+    function close() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    }
+
+    menuBtn.addEventListener('click', open);
+    overlay.addEventListener('click', close);
+    $$('.admin-nav button').forEach(btn => btn.addEventListener('click', close));
+  }
+
   /* ---------- INIT ---------- */
   async function init() {
     initNav();
+    initSidebarToggle();
     const user = await checkAuth();
     if (!user) return;
 
