@@ -289,22 +289,93 @@
   border-color: rgba(0,180,216,.25);
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1100px) {
-  .mdStats { grid-template-columns: repeat(2, 1fr); }
+/* =============== RESPONSIVE POLISH =============== */
+@media (max-width: 1024px) {
+  .mdGrid-3 { grid-template-columns: repeat(2, 1fr); }
+  .mdGrid-2 { grid-template-columns: 1fr; }
+  
+  .mdGrid { 
+    flex-direction: column; 
+    display: flex;
+  }
+  .mdStack { 
+    width: 100%; 
+  }
+
+  .mdStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-@media (max-width: 860px) {
-  .search-box { display: none; }
-  .topbar-right .btn { font-size: .8rem; padding: 8px 12px; }
+@media (max-width: 768px) {
+  .mdApp { flex-direction: column; }
+  
+  /* Sidebar Mobile Navbar - Note: We are now using the adminSidebar toggle from adminDashboard.css */
+  /* If .mdSidebar is used elsewhere, we keep this, but profile.html uses .admin-sidebar */
+  
+  .mdStats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mdMain { padding: 15px; }
+  
+  .mdHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  
+  .mdActions { width: 100%; justify-content: space-between; }
+  
+  /* Grids */
+  .mdGrid-3, .mdGrid-4, .mdGrid-2 { grid-template-columns: 1fr; }
+  
+  .mdCard { margin-bottom: 15px; }
+  
+  /* Course Viewer Layout */
+  .mdCourseViewerLayout {
+    flex-direction: column;
+  }
+  
+  .mdCourseMain {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .mdCourseSidebar {
+    width: 100%;
+  }
+  
+  /* Custom Modal Resize for Mobile */
+  .mdModalContent {
+    width: 95%;
+    max-height: 95vh;
+    margin: 10px auto;
+  }
+
+  .mdViewerFrame {
+    height: 300px !important;
+  }
+
+  /* Form Layouts */
+  .mdFormGrid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .mdHeader h2 { font-size: 1.5rem; }
+  .mdProfileCard { flex-direction: column; text-align: center; }
+  .mdProfileAvatar { margin-right: 0; margin-bottom: 15px; }
+  .mdViewerFrame { height: 250px !important; }
 }
 
 @media (max-width: 600px) {
-  .mdStats { grid-template-columns: 1fr; }
-  .admin-topbar h1 { font-size: .95rem; }
-  .mdStatCard { padding: 16px; }
+  .mdStats {
+    grid-template-columns: 1fr;
+  }
 }
-
 /* ===== MODALS ===== */
 .mdModal {
   position: fixed;
