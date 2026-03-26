@@ -19,6 +19,7 @@ const enrollmentRoutes = require('./src/routes/enrollments');
 const lessonRoutes = require('./src/routes/lessons');
 const progressRoutes = require('./src/routes/progress');
 const certificateRoutes = require('./src/routes/certificates');
+const submissionRoutes = require('./src/routes/submissions');
 const contentRoutes = require('./src/routes/content');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -26,61 +27,79 @@ const mongoSanitize = require('./src/middleware/sanitize');
 const errorHandler = require('./src/middleware/error');
 
 const app = express();
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const path = require('path');
+
+// Load Swagger document
+let swaggerDocument;
+try {
+    const yamlPath = path.join(__dirname, 'swagger.yaml');
+    console.log(`[DEBUG] Loading Swagger from: ${yamlPath}`);
+    swaggerDocument = YAML.load(yamlPath);
+    console.log('✅ Swagger document loaded successfully');
+} catch (error) {
+    console.error('❌ Failed to load Swagger document:', error.message);
+}
 
 // Connect to database
 connectDB();
 
-// Middleware
+// Basic Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Security Middleware (Configured for Swagger compat)
+app.use(helmet({
+    contentSecurityPolicy: false
+}));
+app.use(mongoSanitize);
+
+// CORS
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin ||
             origin.startsWith('http://localhost:') ||
             origin.startsWith('http://127.0.0.1:') ||
-            origin.startsWith('http://192.168.1.') ||
-            origin.endsWith('.vercel.app') ||
             origin.replace(/\/$/, "") === process.env.FRONTEND_URL?.replace(/\/$/, "")) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(null, true); // Permissive for local dev
         }
     },
-    credentials: true // Required for httpOnly cookie transport
+    credentials: true
 }));
-// Security Middleware
-app.use(helmet());
-app.use(mongoSanitize);
+
+// Swagger Documentation - Mounted at root /docs to avoid confusion
+if (swaggerDocument) {
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+    console.log('🚀 Swagger UI available at /docs');
+}
+
+// Health Check Route
+app.get('/api/v1/health', (req, res) => {
+    res.json({
+        success: true,
+        status: 'online',
+        timestamp: new Date().toISOString(),
+        swagger: !!swaggerDocument
+    });
+});
 
 // Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // limit each IP to 1000 requests per windowMs (increased for local dev)
-    message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes' }
+    windowMs: 15 * 60 * 1000,
+    max: 1000,
+    message: { success: false, message: 'Too many requests' }
 });
-
-// Apply rate limiting to all requests under /api
 app.use('/api', limiter);
-
-// Specific limiter for auth routes
-const authLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 100, // limit each IP to 100 requests per hour (increased for local dev)
-    message: { success: false, message: 'Too many login attempts, please try again after an hour' }
-});
-app.use('/api/v1/auth/login', authLimiter);
-app.use('/api/v1/auth/register', authLimiter);
-
-app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-
 
 // Routes
 app.get('/', (req, res) => {
     res.json({
         success: true,
-        message: 'YAN Platform API is running 🚀',
-        version: '1.0.0'
+        message: 'YAN Platform API is running 🚀'
     });
 });
 
@@ -98,23 +117,24 @@ app.use('/api/v1/enrollments', enrollmentRoutes);
 app.use('/api/v1/lessons', lessonRoutes);
 app.use('/api/v1/progress', progressRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
+app.use('/api/v1/submissions', submissionRoutes);
 app.use('/api/v1', contentRoutes);
-
-console.log('✅ All routes mounted under /api/v1/');
 
 // Error handling
 app.use((req, res, next) => {
     res.status(404).json({
         success: false,
-        message: `Route not found: ${req.method} ${req.originalUrl}`
+        message: `Route not found: ${req.method} ${req.originalUrl}`,
+        suggestion: req.originalUrl.includes('docs') ? 'Try /docs instead' : 'Check API_TESTING.md'
     });
 });
 
-// Global Error Handler
+// Serve static uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
