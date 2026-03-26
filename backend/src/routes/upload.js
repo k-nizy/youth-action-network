@@ -2,14 +2,20 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+const path = require('path');
 const { protect } = require('../middleware/auth');
 
-// Configure cloudinary
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-});
+// Configure cloudinary safely
+try {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+} catch (configErr) {
+    console.warn("Cloudinary config warning:", configErr.message);
+}
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -31,6 +37,26 @@ router.get('/test-credentials', protect, async (req, res) => {
     }
 });
 
+// Helper function to save file locally
+const saveLocally = (file) => {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    // Create a safe cross-platform file name
+    const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
+    const fileName = `local_${Date.now()}_${safeOriginalName}`;
+    const filePath = path.join(uploadDir, fileName);
+    
+    fs.writeFileSync(filePath, file.buffer);
+    return {
+        url: `/uploads/${fileName}`,
+        publicId: fileName,
+        format: safeOriginalName.split('.').pop()
+    };
+};
+
 // Upload endpoint
 router.post('/', protect, upload.any(), async (req, res) => {
     try {
@@ -43,33 +69,46 @@ router.post('/', protect, upload.any(), async (req, res) => {
 
         const file = req.files[0];
 
-        const uploadPromise = new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                {
-                    folder: 'yan_uploads',
-                    resource_type: 'auto'
-                },
-                (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
-                }
-            );
-            uploadStream.end(file.buffer);
-        });
+        // Ensure we try Cloudinary first, but fallback aggressively
+        let uploadResult;
+        try {
+            uploadResult = await new Promise((resolve, reject) => {
+                const timeoutId = setTimeout(() => reject(new Error('Cloudinary timeout')), 8000);
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: 'yan_uploads',
+                        resource_type: 'auto'
+                    },
+                    (error, result) => {
+                        clearTimeout(timeoutId);
+                        if (error) {
+                            reject(new Error(error.message || 'Unknown Cloudinary error'));
+                        } else {
+                            resolve({
+                                url: result.secure_url,
+                                publicId: result.public_id,
+                                format: result.format || file.originalname.split('.').pop()
+                            });
+                        }
+                    }
+                );
+                uploadStream.end(file.buffer);
+            });
+        } catch (cloudErr) {
+            console.warn('Cloudinary upload failed, falling back to local storage:', cloudErr.message);
+            // DO LOCAL FALLBACK
+            uploadResult = saveLocally(file);
+        }
 
-        const result = await uploadPromise;
-
-        res.status(200).json({
+        // Return unified success response
+        return res.status(200).json({
             success: true,
-            data: {
-                url: result.secure_url,
-                publicId: result.public_id,
-                format: result.format
-            }
+            data: uploadResult
         });
+
     } catch (error) {
-        console.error('Upload Error:', error);
-        res.status(500).json({
+        console.error('Fatal Upload Error:', error);
+        return res.status(500).json({
             success: false,
             message: error.message || 'Server Error'
         });
