@@ -93,6 +93,8 @@ const VIEW_META = {
     onPrimary: () => { resetCourseForm(); $("courseTitle").focus(); } },
   assignments: { title: "Assignments", subtitle: "Create assignments linked to courses for members.", primary: "+ New Assignment",
     onPrimary: () => { resetAssignmentForm(); $("assignmentTitle").focus(); } },
+  submissions: { title: "Submitted Assignments", subtitle: "View assignments submitted by members.", primary: "Refresh List",
+    onPrimary: () => { renderSubmissions(); } },
   opportunities: { title: "Opportunities", subtitle: "Add funding, training, and partnership opportunities.", primary: "+ New Opportunity",
     onPrimary: () => { resetOppForm(); $("oppTitle").focus(); } },
   events: { title: "Events", subtitle: "Add upcoming events for members and partners.", primary: "+ New Event",
@@ -112,13 +114,19 @@ function switchView(view) {
     applications: "view-applications",
     courses: "view-courses",
     assignments: "view-assignments",
+    submissions: "view-submissions",
     opportunities: "view-opportunities",
     events: "view-events",
     profile: "view-profile",
   };
 
-  Object.values(map).forEach(id => $(id).style.display = "none");
-  $(map[view]).style.display = "block";
+  Object.values(map).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  
+  const activeEl = document.getElementById(map[view]);
+  if (activeEl) activeEl.style.display = "block";
 
   $("pageTitle").textContent = VIEW_META[view].title;
   $("primaryActionBtn").textContent = VIEW_META[view].primary;
@@ -450,6 +458,10 @@ async function editCourse(id) {
     $("courseTitle").value = course.title || "";
     $("courseQuarter").value = course.quarter || "Q1";
     $("courseDesc").value = course.description || "";
+    
+    // Crucial bug fix: Switch the view so the admin actually sees the pre-populated form!
+    switchView("courses");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (err) { console.error("Failed to load course:", err); }
 }
 
@@ -519,6 +531,181 @@ function deleteAssignment(id) {
   saveList(LS_KEYS.ASSIGNMENTS, loadList(LS_KEYS.ASSIGNMENTS).filter(a => a.id !== id));
   renderAll();
 }
+
+/* ===== Submissions ===== */
+function submissionBadge(status, grade) {
+  if (status === "graded") {
+    const gradeStr = grade !== undefined && grade !== null ? ` • ${grade}/100` : '';
+    return `<span class="badge b-accepted">✅ Graded${gradeStr}</span>`;
+  }
+  if (status === "reviewed") return `<span class="badge" style="background:rgba(59,130,246,.12);color:#2563eb;border:1px solid rgba(59,130,246,.25);">👁 Reviewed</span>`;
+  return `<span class="badge b-pending">⏳ Pending</span>`;
+}
+
+function openReviewModal(sub) {
+  if (!document.getElementById("reviewSubmissionModal")) {
+    document.body.insertAdjacentHTML("beforeend", `
+      <div class="modalx" id="reviewSubmissionModal">
+        <div class="modalx-card" style="max-width:520px;">
+          <div class="modalx-head">
+            <div>
+              <h4 style="margin:0;">Review Submission</h4>
+              <p class="muted" style="margin:4px 0 0;font-size:0.85rem;" id="reviewSubMeta"></p>
+            </div>
+            <button class="modalx-close" id="reviewModalCloseBtn">&times;</button>
+          </div>
+          <div class="modalx-body">
+            <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:14px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.08);">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span class="muted">Member</span><strong id="rv-member"></strong></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span class="muted">Course</span><span id="rv-course"></span></div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span class="muted">Quarter</span><span id="rv-quarter"></span></div>
+              <div style="display:flex;justify-content:space-between;"><span class="muted">File</span><a id="rv-file" href="#" target="_blank" style="color:var(--primary);">View ↗</a></div>
+            </div>
+            <input type="hidden" id="reviewSubId">
+            <div class="field">
+              <label>Action</label>
+              <select id="reviewAction" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit;">
+                <option value="reviewed">Mark as Reviewed (no grade yet)</option>
+                <option value="graded">Mark as Graded (assign score)</option>
+              </select>
+            </div>
+            <div class="field" id="gradeField" style="display:none;margin-top:12px;">
+              <label>Grade (0 – 100)</label>
+              <input id="reviewGrade" type="number" min="0" max="100" placeholder="e.g. 85" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit;">
+            </div>
+            <div class="field" style="margin-top:12px;">
+              <label>Feedback (optional)</label>
+              <textarea id="reviewFeedback" rows="3" placeholder="Write feedback for the member…" style="width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:inherit;resize:vertical;"></textarea>
+            </div>
+            <p id="reviewAlert" style="display:none;margin-top:8px;padding:8px 12px;border-radius:8px;font-size:0.875rem;"></p>
+          </div>
+          <div class="modalx-footer" style="display:flex;justify-content:flex-end;gap:10px;">
+            <button class="btn-sm" id="reviewCancelBtn">Cancel</button>
+            <button class="btn-sm btn-primary-sm" id="reviewConfirmBtn">Submit Review</button>
+          </div>
+        </div>
+      </div>
+    `);
+
+    document.getElementById("reviewAction").addEventListener("change", function() {
+      document.getElementById("gradeField").style.display = this.value === "graded" ? "block" : "none";
+    });
+    document.getElementById("reviewModalCloseBtn").addEventListener("click", closeReviewModal);
+    document.getElementById("reviewCancelBtn").addEventListener("click", closeReviewModal);
+
+    document.getElementById("reviewConfirmBtn").addEventListener("click", async () => {
+      const id = document.getElementById("reviewSubId").value;
+      const action = document.getElementById("reviewAction").value;
+      const gradeVal = document.getElementById("reviewGrade").value;
+      const feedback = document.getElementById("reviewFeedback").value.trim();
+      const alertEl = document.getElementById("reviewAlert");
+      const confirmBtn = document.getElementById("reviewConfirmBtn");
+
+      let grade = null;
+      if (action === "graded") {
+        if (gradeVal === "" && gradeVal !== "0") {
+          alertEl.textContent = "Please enter a grade between 0 and 100.";
+          alertEl.style.cssText = "display:block;background:rgba(239,68,68,.12);color:#ef4444;padding:8px 12px;border-radius:8px;";
+          return;
+        }
+        grade = parseFloat(gradeVal);
+        if (isNaN(grade) || grade < 0 || grade > 100) {
+          alertEl.textContent = "Grade must be a number between 0 and 100.";
+          alertEl.style.cssText = "display:block;background:rgba(239,68,68,.12);color:#ef4444;padding:8px 12px;border-radius:8px;";
+          return;
+        }
+      }
+
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = "Saving…";
+      alertEl.style.display = "none";
+
+      try {
+        await api.updateSubmissionStatus(id, action, grade, feedback || undefined);
+        closeReviewModal();
+        renderSubmissions();
+      } catch (err) {
+        alertEl.textContent = err.message || "Review failed. Please try again.";
+        alertEl.style.cssText = "display:block;background:rgba(239,68,68,.12);color:#ef4444;padding:8px 12px;border-radius:8px;";
+      } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = "Submit Review";
+      }
+    });
+  }
+
+  // Populate modal fields
+  document.getElementById("reviewSubId").value = sub._id || sub.id;
+  document.getElementById("rv-member").textContent = sub.user?.name || "Unknown";
+  document.getElementById("rv-course").textContent = sub.course?.title || "Unknown";
+  document.getElementById("rv-quarter").textContent = sub.quarter || "-";
+  const fileLink = document.getElementById("rv-file");
+  fileLink.href = sub.fileUrl || "#";
+  fileLink.textContent = sub.fileName || "View File";
+  // Pre-select next logical action
+  const nextAction = sub.status === "reviewed" ? "graded" : "reviewed";
+  document.getElementById("reviewAction").value = nextAction;
+  document.getElementById("gradeField").style.display = nextAction === "graded" ? "block" : "none";
+  document.getElementById("reviewGrade").value = sub.grade ?? "";
+  document.getElementById("reviewFeedback").value = sub.feedback || "";
+  document.getElementById("reviewAlert").style.display = "none";
+  document.getElementById("reviewSubmissionModal").classList.add("active");
+}
+
+function closeReviewModal() {
+  const m = document.getElementById("reviewSubmissionModal");
+  if (m) m.classList.remove("active");
+}
+
+async function renderSubmissions() {
+  const tbody = $("submissionsTbody");
+  const empty = $("submissionsEmpty");
+  if (!tbody) return;
+
+  tbody.innerHTML = `<tr><td colspan="7" style="padding:20px;text-align:center;" class="muted">Loading submissions…</td></tr>`;
+  try {
+    const submissions = await api.getAllSubmissions();
+    if (!submissions || !submissions.length) {
+      tbody.innerHTML = "";
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
+    tbody.innerHTML = "";
+
+    for (const sub of submissions) {
+      const fileUrl = sub.fileUrl || '#';
+      const fileName = sub.fileName || 'View File';
+      const isPending = sub.status === "pending" || !sub.status;
+      const btnLabel = isPending ? "Review" : "Update";
+
+      tbody.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td style="font-weight:700;color:var(--secondary);">${escapeHTML(sub.user?.name || "Unknown")}<br><span class="muted" style="font-size:0.78rem;font-weight:400;">${escapeHTML(sub.user?.email || "")}</span></td>
+          <td>${escapeHTML(sub.course?.title || "Unknown Course")}</td>
+          <td>${escapeHTML(sub.quarter || "-")}</td>
+          <td><a href="${fileUrl}" target="_blank" style="color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:4px;">📎 ${escapeHTML(fileName)}</a></td>
+          <td class="muted">${escapeHTML(formatDate(sub.createdAt))}</td>
+          <td>${submissionBadge(sub.status, sub.grade)}</td>
+          <td><button class="btn-sm btn-primary-sm review-sub-btn" data-subid="${escapeHTML(sub._id || sub.id)}" style="white-space:nowrap;">${btnLabel}</button></td>
+        </tr>
+      `);
+    }
+
+    tbody.querySelectorAll(".review-sub-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.subid;
+        const sub = submissions.find(s => (s._id || s.id) === id);
+        if (sub) openReviewModal(sub);
+      });
+    });
+
+  } catch (err) {
+    console.error("Failed to load submissions:", err);
+    tbody.innerHTML = `<tr><td colspan="7" class="muted" style="padding:20px;text-align:center;">Error loading submissions. Please try again.</td></tr>`;
+  }
+}
+
 
 /* ===== Opportunities ===== */
 function resetOppForm() {
@@ -784,6 +971,7 @@ async function renderAll() {
     }
     
     if (state.view === "assignments") renderAssignments();
+    if (state.view === "submissions") renderSubmissions();
     if (state.view === "opportunities") renderOpps();
     if (state.view === "events") renderEvents();
     if (state.view === "profile") renderProfile();
@@ -890,58 +1078,58 @@ async function init() {
     btn.addEventListener("click", () => switchView(btn.dataset.view));
   });
 
-  $("primaryActionBtn").addEventListener("click", () => VIEW_META[state.view].onPrimary());
+  $("primaryActionBtn")?.addEventListener("click", () => VIEW_META[state.view].onPrimary());
 
-  $("globalSearch").addEventListener("input", (e) => {
+  $("globalSearch")?.addEventListener("input", (e) => {
     state.search = e.target.value.trim();
     renderAll();
   });
 
-  $("appStatusFilter").addEventListener("change", renderApplications);
+  $("appStatusFilter")?.addEventListener("change", renderApplications);
 
-  $("clearRejectedBtn").addEventListener("click", () => {
+  $("clearRejectedBtn")?.addEventListener("click", () => {
     saveList(LS_KEYS.APPS, loadList(LS_KEYS.APPS).filter(a => normalizeStatus(a.status) !== "rejected"));
     renderAll();
   });
 
-  $("rejectCloseBtn").addEventListener("click", closeRejectModal);
-  $("cancelRejectBtn").addEventListener("click", closeRejectModal);
-  $("confirmRejectBtn").addEventListener("click", () => {
+  $("rejectCloseBtn")?.addEventListener("click", closeRejectModal);
+  $("cancelRejectBtn")?.addEventListener("click", closeRejectModal);
+  $("confirmRejectBtn")?.addEventListener("click", () => {
     const id = $("rejectAppId").value;
     const msg = $("rejectMessage").value.trim();
     closeRejectModal();
     rejectApplicationWithEmail(id, msg);
   });
 
-  $("seedBtn").addEventListener("click", seedDemoCore);
+  $("seedBtn")?.addEventListener("click", seedDemoCore);
 
-  $("saveCourseBtn").addEventListener("click", saveCourse);
-  $("resetCourseBtn").addEventListener("click", resetCourseForm);
-  $("saveAssignmentBtn").addEventListener("click", saveAssignment);
-  $("resetAssignmentBtn").addEventListener("click", resetAssignmentForm);
-  $("saveOppBtn").addEventListener("click", saveOpp);
-  $("resetOppBtn").addEventListener("click", resetOppForm);
-  $("saveEventBtn").addEventListener("click", saveEvent);
-  $("resetEventBtn").addEventListener("click", resetEventForm);
+  $("saveCourseBtn")?.addEventListener("click", saveCourse);
+  $("resetCourseBtn")?.addEventListener("click", resetCourseForm);
+  $("saveAssignmentBtn")?.addEventListener("click", saveAssignment);
+  $("resetAssignmentBtn")?.addEventListener("click", resetAssignmentForm);
+  $("saveOppBtn")?.addEventListener("click", saveOpp);
+  $("resetOppBtn")?.addEventListener("click", resetOppForm);
+  $("saveEventBtn")?.addEventListener("click", saveEvent);
+  $("resetEventBtn")?.addEventListener("click", resetEventForm);
 
-  $("goHomeBtn").addEventListener("click", () => window.location.href = "index.html");
+  $("goHomeBtn")?.addEventListener("click", () => window.location.href = "index.html");
 
-  $("logoutBtn").addEventListener("click", async () => {
+  $("logoutBtn")?.addEventListener("click", async () => {
     if (typeof api !== 'undefined') await api.logout();
     window.location.href = "index.html";
   });
 
   // View modal close
-  $("viewCloseBtn").addEventListener("click", closeViewModal);
+  $("viewCloseBtn")?.addEventListener("click", closeViewModal);
 
   // Modal accept/reject actions
-  $("modalAcceptBtn").addEventListener("click", () => {
+  $("modalAcceptBtn")?.addEventListener("click", () => {
     if (!state.activeAppId) return;
     acceptApplication(state.activeAppId);
     closeViewModal();
   });
 
-  $("modalRejectBtn").addEventListener("click", () => {
+  $("modalRejectBtn")?.addEventListener("click", () => {
     if (!state.activeAppId) return;
     closeViewModal();
     openRejectModal(state.activeAppId);
@@ -949,6 +1137,16 @@ async function init() {
 
   switchView("applications");
   await renderAll();
+
+  // Handle ?editCourse=<id> redirect from homepage "Edit Configuration" buttons
+  const urlParams = new URLSearchParams(window.location.search);
+  const editCourseId = urlParams.get('editCourse');
+  if (editCourseId) {
+    // Small delay to let courses load, then auto-edit
+    setTimeout(() => editCourse(editCourseId), 500);
+    // Clean the URL
+    window.history.replaceState({}, '', window.location.pathname);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);
