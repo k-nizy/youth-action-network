@@ -169,7 +169,10 @@ const api = (() => {
         }
 
         if (!response.ok) {
-            const errorMessage = (data && data.message) ? data.message : 'Request failed';
+            let errorMessage = (data && data.message) ? data.message : 'Request failed';
+            if (data && data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                errorMessage = data.errors.join('\n');
+            }
             const error = new Error(errorMessage);
             error.status = response.status;
             error.data = data;
@@ -321,6 +324,64 @@ const api = (() => {
     }
 
     // ================================================================
+    // SUBMISSION ENDPOINTS
+    // ================================================================
+
+    async function uploadFile(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Use standard fetch here because we need to send FormData and not JSON
+        const token = sessionStorage.getItem('yan_access_token');
+        const url = YAN_CONFIG.API_BASE_URL + '/upload';
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.message || 'File upload failed');
+        }
+        
+        return data.data; // { url, publicId, format }
+    }
+
+    async function submitAssignmentToCourse(submissionData) {
+        const response = await request('/submissions', {
+            method: 'POST',
+            body: submissionData
+        });
+        return response.data || null;
+    }
+
+    async function getMySubmissions() {
+        const response = await request('/submissions/mine', { method: 'GET' });
+        return response.data || [];
+    }
+
+    async function getAllSubmissions() {
+        const response = await request('/submissions', { method: 'GET' });
+        return response.data || [];
+    }
+
+    async function updateSubmissionStatus(id, status, grade, feedback) {
+        const body = { status };
+        if (grade !== undefined && grade !== null) body.grade = grade;
+        if (feedback !== undefined) body.feedback = feedback;
+        const response = await request(`/submissions/${id}/review`, {
+            method: 'PATCH',
+            body
+        });
+        return response.data || null;
+    }
+
+    // ================================================================
     // CERTIFICATE ENDPOINTS
     // ================================================================
 
@@ -424,6 +485,11 @@ const api = (() => {
         getAdminSystemStats,
         getAdminLmsAnalytics,
         getAdminRecentApplications,
-        submitApplication
+        submitApplication,
+        uploadFile,
+        submitAssignmentToCourse,
+        getMySubmissions,
+        getAllSubmissions,
+        updateSubmissionStatus
     });
 })();
