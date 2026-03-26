@@ -7,6 +7,9 @@
     <title>Youth Advocates Network Rwanda | Empowering Young Leaders</title>
     <meta name="description"
         content="Youth Advocates Network (YAN) is Rwanda's leading youth-led umbrella organization connecting youth organizations for advocacy, capacity building, and innovation.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -15,18 +18,15 @@
     <!-- Navigation -->
     <nav class="navbar" id="navbar">
         <div class="nav-container">
-            <div class="nav-brand">
-                
-
-                <span class="brand-text">YAN <span class="brand-accent">Rwanda</span></span>
-            </div>
+            <a href="index.html" class="nav-brand" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/logo.png" alt="Youth Advocates Network Logo" style="height: 60px; width: auto; max-width: 250px; object-fit: contain;">
+            </a>
 
             <div class="nav-menu" id="navMenu">
                 <a href="#home" class="nav-link active">Home</a>
                 <a href="#about" class="nav-link">About</a>
                 <a href="members.html" class="nav-link">Network</a>
                 <a href="#capacity" class="nav-link" data-role="member,admin">Capacity Building</a>
-                <a href="#opportunities" class="nav-link" data-role="member,admin">Opportunities</a>
                 <a href="#events" class="nav-link">Events</a>
                 <a href="#gallery" class="nav-link">Gallery</a>
                 <a href="#contact" class="nav-link">Contact</a>
@@ -109,9 +109,8 @@
                             stroke-linejoin="round" />
                     </svg>
                 </button>
-                <button class="btn btn-secondary"
-                    onclick="document.getElementById('about').scrollIntoView({behavior: 'smooth'})">
-                    <span>Explore Platform</span>
+                <button class="btn btn-secondary" onclick="window.location.href='#contact'">
+                    <span>Donate or Partner</span>
                 </button>
             </div>
         </div>
@@ -371,24 +370,6 @@
         </div>
     </section>
 
-    <!-- Impact Rating Classification -->
-    <section class="impact-rating-section" id="impactRating">
-        <div class="container">
-            <div class="section-header">
-                <div>
-                    <div class="section-label">Impact Evidence</div>
-                    <h2 class="section-title">Impact Rating Classification</h2>
-                    <p class="section-description">Classification of spotlight organizations based on documented scale,
-                        sustainability, and measurable outcomes.</p>
-                </div>
-            </div>
-
-            <div class="impact-rating-grid" id="impactRatingGrid">
-                <!-- Impact rating cards will be populated by JavaScript -->
-            </div>
-        </div>
-    </section>
-
     <!-- Testimonials Section -->
     <section class="testimonials-section" id="testimonials">
         <div class="container">
@@ -642,30 +623,7 @@
         </div>
     </section>
 
-    <!-- Opportunities Section -->
-    <section class="opportunities-section" id="opportunities">
-        <div class="container">
-            <div class="section-header">
-                <div>
-                    <div class="section-label">For Members</div>
-                    <h2 class="section-title">Opportunities</h2>
-                    <p class="section-description">Funding, training, and partnership opportunities</p>
-                </div>
-            </div>
-
-            <div class="filter-tabs" id="opportunityFilters">
-                <button class="filter-tab active" data-filter="all">All</button>
-                <button class="filter-tab" data-filter="funding">Funding</button>
-                <button class="filter-tab" data-filter="training">Training</button>
-                <button class="filter-tab" data-filter="partnership">Partnership</button>
-            </div>
-
-            <div class="opportunities-grid" id="opportunitiesGrid">
-                <!-- Opportunities will be populated by JavaScript -->
-            </div>
-        </div>
-    </section>
-
+    <!-- Opportunities Section Removed -->
     <!-- Events Section -->
     <section class="events-section" id="events">
         <div class="container">
@@ -881,7 +839,8 @@
     <!-- Member Dashboard -->
     <section class="dashboard-section" id="dashboard" style="display: none;">
         <div class="dashboard-container">
-            <aside class="dashboard-sidebar">
+            <div class="dashboard-sidebar-overlay" id="dashboardSidebarOverlay"></div>
+            <aside class="dashboard-sidebar" id="memberSidebar">
                 <div class="dashboard-profile">
                     <div class="dashboard-avatar">YL</div>
                     <h3>Young Leader</h3>
@@ -930,8 +889,15 @@
 
             <main class="dashboard-main">
                 <div class="dashboard-header">
-                    <h1>Dashboard Overview</h1>
-                    <p>Welcome back! Here's your progress summary</p>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <button class="member-menu-btn" id="memberMenuBtn" aria-label="Open menu">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div>
+                            <h1>Dashboard Overview</h1>
+                            <p>Welcome back! Here's your progress summary</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Applicant Specific View -->
@@ -1298,10 +1264,9 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
-                    <div class="footer-logo">
-                        <div class="logo-circle"></div>
-                        <span class="brand-text">YAN Rwanda</span>
-                    </div>
+                    <a href="index.html" class="nav-brand" style="margin-bottom: 1rem; text-decoration: none;">
+                        <img src="assets/logo.png" alt="Youth Advocates Network Logo" style="height: 60px; width: auto; max-width: 250px; object-fit: contain;">
+                    </a>
                     <p>Empowering Rwanda's next generation of leaders through advocacy, capacity building, and
                         innovation.</p>
                 </div>
@@ -1316,8 +1281,7 @@
 
                 <div class="footer-links">
                     <h4>Programs</h4>
-                    <a href="#capacity">Capacity Building</a>
-                    <a href="#opportunities" data-role="member,admin">Opportunities</a>
+                    <a href="#capacity" data-role="member,admin">Capacity Building</a>
                     <a href="#gallery">Gallery</a>
                 </div>
 
