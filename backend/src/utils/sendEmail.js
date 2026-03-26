@@ -1,8 +1,14 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
-    // Create a transporter using your SMTP credentials
-    // Note: In production, configure these in .env
+    // Validate SMTP credentials exist
+    if (!process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
+        console.error('❌ EMAIL CONFIG ERROR: SMTP_EMAIL or SMTP_PASSWORD environment variables are missing!');
+        console.error('   SMTP_EMAIL:', process.env.SMTP_EMAIL ? '✅ Set' : '❌ MISSING');
+        console.error('   SMTP_PASSWORD:', process.env.SMTP_PASSWORD ? '✅ Set' : '❌ MISSING');
+        throw new Error('Email service not configured: SMTP credentials missing');
+    }
+
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -19,9 +25,11 @@ const sendEmail = async (options) => {
         html: options.html
     };
 
+    console.log(`📧 Sending email to ${options.email} | Subject: "${options.subject}"`);
     const info = await transporter.sendMail(message);
+    console.log('✅ Email sent successfully: %s', info.messageId);
 
-    console.log('Message sent: %s', info.messageId);
+    return info;
 };
 
 module.exports = sendEmail;

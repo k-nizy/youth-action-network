@@ -90,11 +90,11 @@ exports.register = async (req, res, next) => {
         const message = `Welcome to YAN Rwanda!\n\nPlease verify your email by clicking the link below:\n${verifyUrl}\n\nIf you did not request this, please ignore this email.`;
 
         // Send verification email asynchronously (don't block the response)
-        sendEmail({
+        const verificationEmailPromise = sendEmail({
             email: user.email,
             subject: 'Verify your YAN Rwanda Account',
             message
-        }).catch(err => console.error('Email verification sending failed:', err));
+        });
 
         // Send professional welcome email
         const welcomeHtml = `
@@ -144,12 +144,12 @@ exports.register = async (req, res, next) => {
         </body>
         </html>`;
 
-        sendEmail({
+        const welcomeEmailPromise = sendEmail({
             email: user.email,
             subject: `🎉 Welcome to YAN Rwanda, ${user.name}!`,
             message: `Welcome to YAN Rwanda, ${user.name}! We're excited to have you join our community of youth advocates.`,
             html: welcomeHtml
-        }).catch(err => console.error('Welcome email sending failed:', err));
+        });
 
         // Admin Notification Email
         const adminEmail = 'yaneip26@gmail.com'; 
@@ -164,12 +164,30 @@ exports.register = async (req, res, next) => {
             <p style="font-size: 12px; color: #666;">This is an automated notification from the YAN Platform.</p>
         </div>`;
 
-        sendEmail({
+        const adminEmailPromise = sendEmail({
             email: adminEmail,
             subject: `New YAN Registration: ${user.name}`,
             message: `A new user has registered on YAN.\nName: ${user.name}\nEmail: ${user.email}\nRole: ${user.role}\nOrganization: ${user.organization || 'N/A'}`,
             html: adminNotificationHtml
-        }).catch(err => console.error('Admin notification email failed:', err));
+        });
+
+        // CRITICAL: Await all emails before responding to prevent production environments
+        // from killing background tasks after the HTTP response is sent
+        const emailResults = await Promise.allSettled([
+            verificationEmailPromise,
+            welcomeEmailPromise,
+            adminEmailPromise
+        ]);
+
+        // Log results for each email
+        const emailLabels = ['Verification', 'Welcome', 'Admin Notification'];
+        emailResults.forEach((result, i) => {
+            if (result.status === 'fulfilled') {
+                console.log(`✅ ${emailLabels[i]} email sent successfully`);
+            } else {
+                console.error(`❌ ${emailLabels[i]} email failed:`, result.reason?.message || result.reason);
+            }
+        });
 
         const accessToken = signAccessToken(user._id);
 
