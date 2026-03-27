@@ -37,10 +37,15 @@ router.get('/test-credentials', protect, async (req, res) => {
     }
 });
 
+const os = require('os');
+
 // Helper function to save file locally
 const saveLocally = (file) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
-    if (!fs.existsSync(uploadDir)) {
+    // Vercel has a read-only filesystem except for /tmp
+    const isVercel = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
+    const uploadDir = isVercel ? os.tmpdir() : path.join(__dirname, '../../uploads');
+    
+    if (!isVercel && !fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
     }
     
@@ -50,10 +55,14 @@ const saveLocally = (file) => {
     const filePath = path.join(uploadDir, fileName);
     
     fs.writeFileSync(filePath, file.buffer);
+    
+    // Note: On Vercel, this file will be lost after the lambda execution
+    // and cannot be served via static middleware since it's in /tmp
     return {
-        url: `/uploads/${fileName}`,
+        url: isVercel ? 'FILE_STORED_IN_TMP_NON_PERSISTENT' : `/uploads/${fileName}`,
         publicId: fileName,
-        format: safeOriginalName.split('.').pop()
+        format: safeOriginalName.split('.').pop(),
+        isTemporary: isVercel
     };
 };
 
@@ -103,7 +112,8 @@ router.post('/', protect, upload.any(), async (req, res) => {
         // Return unified success response
         return res.status(200).json({
             success: true,
-            data: uploadResult
+            data: uploadResult,
+            warning: uploadResult.isTemporary ? 'Cloudinary failed. File stored in non-persistent /tmp storage.' : undefined
         });
 
     } catch (error) {

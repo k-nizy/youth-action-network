@@ -168,7 +168,9 @@ const memberDashboard = (function () {
     if (!list) return;
     list.innerHTML = '';
 
+    console.log('[LMS] Rendering quarter:', q);
     const quarterCourses = cbState.courses.filter(c => c.quarter === q);
+    console.log('[LMS] Found courses for', q, ':', quarterCourses.length, quarterCourses);
     
     if (quarterCourses.length === 0) {
       list.innerHTML = `<div class="mdEmptyCard">No capability building modules yet for ${q}.</div>`;
@@ -176,7 +178,12 @@ const memberDashboard = (function () {
     }
 
     quarterCourses.forEach(course => {
-      const enrolled = cbState.enrollments.find(e => e.course && e.course._id === course._id);
+      // Robust enrollment check (handles both populated and unpopulated courses)
+      const enrolled = cbState.enrollments.find(e => {
+        const eId = e.course?._id || e.course?.id || e.course;
+        const cId = course._id || course.id;
+        return String(eId) === String(cId);
+      });
       const total = course.lessons?.length || 1;
       const done = enrolled?.completedLessons?.length || 0;
       const pct = Math.round((done / total) * 100);
@@ -381,9 +388,17 @@ const memberDashboard = (function () {
   async function markLessonComplete(courseId, lessonId) {
     if (!courseId || !lessonId) return;
     
-    let enrolled = cbState.enrollments.find(e => e.course && (String(e.course._id) === String(courseId) || String(e.course.id) === String(courseId)));
+    let enrolled = cbState.enrollments.find(e => {
+      const eId = e.course?._id || e.course?.id || e.course;
+      const cId = courseId;
+      return String(eId) === String(cId);
+    });
+    
     if (!enrolled) {
-      await api.enrollInCourse(courseId).catch(console.error);
+      console.log('[LMS] Enrolling user in course:', courseId);
+      await api.enrollInCourse(courseId).catch(err => {
+        console.error('[LMS] Enrollment failed:', err);
+      });
     }
     
     try {

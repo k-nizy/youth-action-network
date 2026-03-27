@@ -1262,8 +1262,8 @@ function applyModuleFilters() {
     const filtered = modulesData.filter(module => {
         const matchesSearch = (module.title || '').toLowerCase().includes(searchTerm) ||
             (module.description || '').toLowerCase().includes(searchTerm);
-        const matchesCategory = categoryFilter === 'all' ||
-            (module.category && module.category.toLowerCase() === categoryFilter.toLowerCase());
+        const matchesCategory = categoryFilter === 'all' || 
+            (module.category && String(module.category).toLowerCase().includes(categoryFilter.toLowerCase()));
         return matchesSearch && matchesCategory;
     });
 
