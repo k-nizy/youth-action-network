@@ -11,7 +11,11 @@ exports.getEnrollments = async (req, res, next) => {
         const enrollments = await Enrollment.find({ user: req.user.id })
             .populate({
                 path: 'course',
-                select: 'title description difficulty duration status'
+                select: 'title description difficulty duration status quarter category',
+                populate: {
+                    path: 'lessons',
+                    select: 'title order isQuiz videoUrl content resources'
+                }
             })
             .populate({
                 path: 'lastAccessedLesson',

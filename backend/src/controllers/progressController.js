@@ -45,14 +45,14 @@ exports.updateProgress = async (req, res, next) => {
         }
 
         // Quarter Locking Logic
-        const course = await Course.findById(courseId);
-        const currentQuarter = getCurrentQuarter();
-        if (course && course.quarter !== currentQuarter) {
-            return res.status(403).json({
-                success: false,
-                message: `This course's assignments are currently locked. They are scheduled for ${course.quarter} (Current: ${currentQuarter}).`
-            });
-        }
+        // const course = await Course.findById(courseId);
+        // const currentQuarter = getCurrentQuarter();
+        // if (course && course.quarter !== currentQuarter) {
+        //     return res.status(403).json({
+        //         success: false,
+        //         message: `This course's assignments are currently locked. They are scheduled for ${course.quarter} (Current: ${currentQuarter}).`
+        //     });
+        // }
 
         enrollment.lastAccessedLesson = lessonId;
 
