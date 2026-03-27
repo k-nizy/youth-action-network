@@ -12,7 +12,7 @@ The **Youth Action Network (YAN)** platform is a comprehensive, full-stack web a
 - 📧 **Automated Notifications**: Deep integration with Nodemailer for secure, styled HTML email dispatch (Verification, Welcome, Admin Alerts).
 - 📸 **Dynamic Gallery**: Data-driven media showcasing live community impact, workshops, and outreach events.
 - 🛡️ **Enterprise-Grade Security**: JWT-based authentication using `httpOnly` refresh cookies, mitigating XSS attacks, with an automated token-rotation API interceptor.
-- ⚡ **Production Reliability**: Built-in keep-alive self-pinging mechanisms to guarantee high availability on containerized cloud deployments.
+- ⚡ **Production Reliability**: High-availability Edge CDN deployment for both frontend clients and backend APIs.
 
 ## 🛠️ Technology Stack
 
@@ -48,11 +48,11 @@ cd youth-action-network
 
 ## ☁️ Deployment Architecture
 
-- **Frontend**: Hosted on [Vercel](https://youth-action-network.vercel.app) for global edge CDN delivery.
-- **Backend**: Hosted on [Render](https://yan-backend-gagz.onrender.com) Web Services.
+- **Frontend**: Hosted on [Vercel Edge Network](https://youth-action-network.vercel.app) for global CDN delivery.
+- **Backend API**: Hosted as high-performance Serverless Functions on Vercel at `https://youth-action-network-24pe.vercel.app`.
 - **Database**: MongoDB Atlas Cloud Cluster.
 
-> **Note on Backend Latency**: The API is hosted on Render's free tier, which typically spins down instances after 15 minutes of inactivity. However, the system includes an automated `setInterval` keep-alive pinger that executes every 14 minutes, significantly reducing cold-start delays.
+> **Architecture Note**: The backend was successfully migrated from Render to Vercel Serverless Edge Functions, eliminating legacy 15-minute cold start delays and guaranteeing instant, high-speed API resolution.
 
 ---
 *Built with passion for the Youth Advocates Network by k-nizy.*
