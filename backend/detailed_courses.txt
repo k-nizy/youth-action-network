@@ -1,0 +1,81 @@
+[dotenv@17.2.3] injecting env (13) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+Connected to DB
+Total courses in DB: 13
+Course: "Youth Advocacy & Policy"
+  _id: 69a62400c0c6f39ab412d3b3
+  status: "published"
+  quarter: "Q1"
+  category: "advocacy"
+---
+Course: "Digital Skills for Impact"
+  _id: 69a62400c0c6f39ab412d3bc
+  status: "published"
+  quarter: "Q1"
+  category: "digital skills"
+---
+Course: "Health Program Management"
+  _id: 69a62400c0c6f39ab412d3c5
+  status: "published"
+  quarter: "Q1"
+  category: "health"
+---
+Course: "Grant Writing & Fundraising"
+  _id: 69a62400c0c6f39ab412d3ce
+  status: "published"
+  quarter: "Q1"
+  category: "leadership"
+---
+Course: "Community Organizing 201"
+  _id: 69a62400c0c6f39ab412d3d7
+  status: "published"
+  quarter: "Q2"
+  category: "advocacy"
+---
+Course: "Introduction to Youth Leadership"
+  _id: 69b53926a6ab405c30b5cf1e
+  status: "published"
+  quarter: "Q1"
+  category: "undefined"
+---
+Course: "YAN Capacity Building - Q1"
+  _id: 69bedaca090e55a7d05d38d2
+  status: "published"
+  quarter: "Q1"
+  category: "undefined"
+---
+Course: "YAN Capacity Building - Q2"
+  _id: 69bedaca090e55a7d05d38da
+  status: "published"
+  quarter: "Q2"
+  category: "undefined"
+---
+Course: "YAN Capacity Building - Q3"
+  _id: 69bedaca090e55a7d05d38de
+  status: "published"
+  quarter: "Q3"
+  category: "undefined"
+---
+Course: "YAN Capacity Building - Q4"
+  _id: 69bedaca090e55a7d05d38e2
+  status: "published"
+  quarter: "Q4"
+  category: "undefined"
+---
+Course: "Leadership Youth NGOs"
+  _id: 69c16f8ccc07eacce5f2ab06
+  status: "published"
+  quarter: "Q1"
+  category: "Capacity Building - Q1"
+---
+Course: "Resilience Adaptive Mindset"
+  _id: 69c16f8dcc07eacce5f2ab0b
+  status: "published"
+  quarter: "Q1"
+  category: "Capacity Building - Q1"
+---
+Course: "Soft Skills Self Management"
+  _id: 69c16f8dcc07eacce5f2ab10
+  status: "published"
+  quarter: "Q1"
+  category: "Capacity Building - Q1"
+---

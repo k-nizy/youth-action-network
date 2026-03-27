@@ -446,6 +446,10 @@ const api = (() => {
         return response.data || [];
     }
 
+    async function seedCapacityBuilding() {
+        return await request('/admin/seed-capacity-building', { method: 'POST' });
+    }
+
     async function submitApplication(data) {
         const response = await request('/applications', {
             method: 'POST',
@@ -485,6 +489,7 @@ const api = (() => {
         getAdminSystemStats,
         getAdminLmsAnalytics,
         getAdminRecentApplications,
+        seedCapacityBuilding,
         submitApplication,
         uploadFile,
         submitAssignmentToCourse,

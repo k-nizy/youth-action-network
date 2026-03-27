@@ -201,3 +201,98 @@ exports.getLmsAnalytics = async (req, res, next) => {
         next(error);
     }
 };
+
+// @desc    Seed Capacity Building modules
+// @route   POST /api/v1/admin/seed-capacity-building
+// @access  Private/Admin
+exports.seedCapacityBuilding = async (req, res, next) => {
+    try {
+        const admin = req.user;
+
+        const q1Courses = [
+            {
+                title: "Leadership Youth NGOs",
+                description: "Introduction/Foundations.",
+                category: "Capacity Building - Q1",
+                quarter: "Q1",
+                difficulty: "beginner",
+                status: "published",
+                duration: "2 hours",
+                createdBy: admin._id,
+                _lesson: {
+                    title: "Module 1",
+                    content: "Canva presentation for Leadership Youth NGOs",
+                    order: 1,
+                    videoUrl: "https://www.canva.com/design/DAHD9d2a0HI/FGGnLwWyVt9MEkOh1dKZKA/view?utm_content=DAHD9d2a0HI&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=hde5b6d7be9",
+                    isQuiz: false
+                }
+            },
+            {
+                title: "Resilience Adaptive Mindset",
+                description: "Core concepts and practice.",
+                category: "Capacity Building - Q1",
+                quarter: "Q1",
+                difficulty: "beginner",
+                status: "published",
+                duration: "2 hours",
+                createdBy: admin._id,
+                _lesson: {
+                    title: "Module 2",
+                    content: "Canva presentation for Resilience Adaptive Mindset",
+                    order: 1,
+                    videoUrl: "https://www.canva.com/design/DAHD9h3F6D8/hmoYB3_d9azl-bi8ki33_A/view?utm_content=DAHD9h3F6D8&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=haa49b074a2",
+                    isQuiz: false
+                }
+            },
+            {
+                title: "Soft Skills Self Management",
+                description: "Assignments and reflection.",
+                category: "Capacity Building - Q1",
+                quarter: "Q1",
+                difficulty: "beginner",
+                status: "published",
+                duration: "2 hours",
+                createdBy: admin._id,
+                _lesson: {
+                    title: "Module 3",
+                    content: "Canva presentation for Soft Skills Self Management",
+                    order: 1,
+                    videoUrl: "https://www.canva.com/design/DAHD9rYwVhc/VjKKoWNC2JO7yC5HhesU2g/view?utm_content=DAHD9rYwVhc&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h180ea3a6da",
+                    isQuiz: false
+                }
+            }
+        ];
+
+        let createdCount = 0;
+        for (const data of q1Courses) {
+            let course = await Course.findOne({ title: data.title });
+            if (!course) {
+                const { _lesson, ...courseData } = data;
+                course = await Course.create(courseData);
+                await Lesson.create({
+                    course: course._id,
+                    title: _lesson.title,
+                    content: _lesson.content,
+                    order: _lesson.order,
+                    videoUrl: _lesson.videoUrl,
+                    isQuiz: _lesson.isQuiz
+                });
+                createdCount++;
+            }
+        }
+
+        // Also fix the category for the existing "Introduction to Youth Leadership" if it exists
+        await Course.findOneAndUpdate(
+            { title: "Introduction to Youth Leadership" },
+            { category: "Capacity Building - Q1" }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: `Successfully seeded ${createdCount} new modules.`,
+            data: { createdCount }
+        });
+    } catch (error) {
+        next(error);
+    }
+};

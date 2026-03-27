@@ -426,3 +426,35 @@
   font-weight: 900;
   color: var(--secondary);
 }
+/* ===== QUARTER TABS ===== */
+.mdQuarterTabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(0,0,0,0.04);
+  padding: 6px;
+  border-radius: 14px;
+  width: fit-content;
+}
+
+.mdQuarterTab {
+  padding: 8px 20px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: #667;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mdQuarterTab:hover {
+  background: rgba(0,0,0,0.03);
+  color: var(--secondary);
+}
+
+.mdQuarterTab.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}

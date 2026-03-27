@@ -43,6 +43,9 @@ router.route('/system-stats')
 router.route('/lms-analytics')
     .get(getLmsAnalytics);
 
+router.route('/seed-capacity-building')
+    .post(require('../controllers/adminController').seedCapacityBuilding);
+
 router.route('/recent-applications')
     .get(require('../controllers/adminController').getRecentApplications);
 

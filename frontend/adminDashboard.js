@@ -1101,6 +1101,24 @@ async function init() {
     rejectApplicationWithEmail(id, msg);
   });
 
+  $("syncModulesBtn")?.addEventListener("click", async () => {
+    if (!confirm("Sync Capacity Building modules from system templates? This will add missing modules and fix categories.")) return;
+    try {
+      const btn = $("syncModulesBtn");
+      btn.disabled = true;
+      btn.textContent = "Syncing...";
+      const res = await api.seedCapacityBuilding();
+      alert(res.message || "Sync complete!");
+      renderAll();
+    } catch (err) {
+      alert("Sync failed: " + err.message);
+    } finally {
+      const btn = $("syncModulesBtn");
+      btn.disabled = false;
+      btn.textContent = "Sync Modules";
+    }
+  });
+
   $("seedBtn")?.addEventListener("click", seedDemoCore);
 
   $("saveCourseBtn")?.addEventListener("click", saveCourse);
