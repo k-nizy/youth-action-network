@@ -135,28 +135,33 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
 
-    // ============================================================
-    // KEEP-ALIVE SELF-PING (Prevents Render free-tier shutdown)
-    // Render spins down free-tier instances after 15 min of inactivity.
-    // This pings the health endpoint every 14 min to keep it alive.
-    // ============================================================
-    if (process.env.NODE_ENV === 'production') {
-        const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
-        const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || `https://yan-backend-gagz.onrender.com`;
+// Export the express app for Vercel Serverless Functions
+module.exports = app;
 
-        setInterval(async () => {
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/v1/health`);
-                const data = await res.json();
-                console.log(`🏓 Keep-alive ping: ${data.status} at ${new Date().toISOString()}`);
-            } catch (err) {
-                console.error('🏓 Keep-alive ping failed:', err.message);
-            }
-        }, PING_INTERVAL);
+// Only spin up the local listener if we aren't executing within Vercel's environment
+if (process.env.VERCEL !== '1') {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
 
-        console.log(`🏓 Keep-alive pinger active — pinging every 14 minutes`);
-    }
-});
+        // ============================================================
+        // KEEP-ALIVE SELF-PING (Prevents Render free-tier shutdown)
+        // ============================================================
+        if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+            const PING_INTERVAL = 14 * 60 * 1000; // 14 minutes
+            const BACKEND_URL = process.env.RENDER_EXTERNAL_URL || `https://yan-backend-gagz.onrender.com`;
+
+            setInterval(async () => {
+                try {
+                    const res = await fetch(`${BACKEND_URL}/api/v1/health`);
+                    const data = await res.json();
+                    console.log(`🏓 Keep-alive ping: ${data.status} at ${new Date().toISOString()}`);
+                } catch (err) {
+                    console.error('🏓 Keep-alive ping failed:', err.message);
+                }
+            }, PING_INTERVAL);
+
+            console.log(`🏓 Keep-alive pinger active — pinging every 14 minutes`);
+        }
+    });
+}
