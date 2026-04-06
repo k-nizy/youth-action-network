@@ -89,12 +89,19 @@ exports.register = async (req, res, next) => {
         const verifyUrl = `${clientUrl}/api/v1/auth/verifyemail/${verificationToken}`;
         const message = `Welcome to YAN Rwanda!\n\nPlease verify your email by clicking the link below:\n${verifyUrl}\n\nIf you did not request this, please ignore this email.`;
 
-        // Send verification email asynchronously (don't block the response)
-        sendEmail({
-            email: user.email,
-            subject: 'Verify your YAN Rwanda Account',
-            message
-        }).catch(err => console.error('Email verification sending failed:', err));
+        const hasSmtpCredentials = Boolean(process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD);
+        const emailTasks = [];
+        if (!hasSmtpCredentials) {
+            console.warn('SMTP not configured (SMTP_EMAIL/SMTP_PASSWORD missing). Skipping registration emails.');
+        } else {
+            emailTasks.push(
+                sendEmail({
+                    email: user.email,
+                    subject: 'Verify your YAN Rwanda Account',
+                    message
+                })
+            );
+        }
 
         // Send professional welcome email
         const welcomeHtml = `
@@ -144,12 +151,16 @@ exports.register = async (req, res, next) => {
         </body>
         </html>`;
 
-        sendEmail({
-            email: user.email,
-            subject: `🎉 Welcome to YAN Rwanda, ${user.name}!`,
-            message: `Welcome to YAN Rwanda, ${user.name}! We're excited to have you join our community of youth advocates.`,
-            html: welcomeHtml
-        }).catch(err => console.error('Welcome email sending failed:', err));
+        if (hasSmtpCredentials) {
+            emailTasks.push(
+                sendEmail({
+                    email: user.email,
+                    subject: `🎉 Welcome to YAN Rwanda, ${user.name}!`,
+                    message: `Welcome to YAN Rwanda, ${user.name}! We're excited to have you join our community of youth advocates.`,
+                    html: welcomeHtml
+                })
+            );
+        }
 
         // Admin Notification Email
         const adminEmail = 'yaneip26@gmail.com'; 
@@ -164,12 +175,31 @@ exports.register = async (req, res, next) => {
             <p style="font-size: 12px; color: #666;">This is an automated notification from the YAN Platform.</p>
         </div>`;
 
-        sendEmail({
-            email: adminEmail,
-            subject: `New YAN Registration: ${user.name}`,
-            message: `A new user has registered on YAN.\nName: ${user.name}\nEmail: ${user.email}\nRole: ${user.role}\nOrganization: ${user.organization || 'N/A'}`,
-            html: adminNotificationHtml
-        }).catch(err => console.error('Admin notification email failed:', err));
+        if (hasSmtpCredentials) {
+            emailTasks.push(
+                sendEmail({
+                    email: adminEmail,
+                    subject: `New YAN Registration: ${user.name}`,
+                    message: `A new user has registered on YAN.\nName: ${user.name}\nEmail: ${user.email}\nRole: ${user.role}\nOrganization: ${user.organization || 'N/A'}`,
+                    html: adminNotificationHtml
+                })
+            );
+        }
+
+        // Wait for delivery attempts so failures are visible in logs.
+        if (emailTasks.length > 0) {
+            const emailResults = await Promise.allSettled(emailTasks);
+            emailResults.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                    const label = index === 0
+                        ? 'Email verification sending failed'
+                        : index === 1
+                            ? 'Welcome email sending failed'
+                            : 'Admin notification email failed';
+                    console.error(`${label}:`, result.reason);
+                }
+            });
+        }
 
         const accessToken = signAccessToken(user._id);
 
