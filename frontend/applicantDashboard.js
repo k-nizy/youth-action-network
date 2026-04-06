@@ -16,6 +16,14 @@ const applicantDashboard = (function () {
          window.location.href = 'index.html';
          return null;
       }
+      if (user.role === 'admin') {
+        window.location.href = 'admin.html';
+        return null;
+      }
+      if (user.role === 'member' || user.role === 'partner') {
+        window.location.href = 'profile.html';
+        return null;
+      }
       return user;
     } catch (err) {
       console.error('Auth check failed:', err);
@@ -26,16 +34,16 @@ const applicantDashboard = (function () {
 
   /* ---------- STATUS HELPERS ---------- */
   const STATUS_CONFIG = {
-    submitted:    { label: 'Submitted',    color: '#3b82f6', icon: '📨', msg: 'Your application has been received and is in the queue for review. Our team typically begins reviewing within 2–3 business days.' },
-    screening:    { label: 'Screening',    color: '#8b5cf6', icon: '🔍', msg: 'Your application is currently being screened for eligibility. It will move to full review shortly.' },
-    under_review: { label: 'Under Review', color: '#f59e0b', icon: '⏳', msg: 'Your application is being reviewed in detail by our membership committee. This usually takes 5-7 business days.' },
-    approved:     { label: 'Approved',     color: '#10b981', icon: '✅', msg: 'Congratulations! Your application has been approved. Your account is now upgraded to Member — refresh the page to access the full member dashboard.' },
-    rejected:     { label: 'Not Approved', color: '#ef4444', icon: '❌', msg: 'Unfortunately, your application was not approved at this time. Please check your email for detailed feedback from our team.' },
-    appealed:     { label: 'Appealed',     color: '#0ea5e9', icon: '📤', msg: 'Your appeal has been received and is being reconsidered by the committee.' },
+    submitted:    { label: 'Submitted',    color: '#3b82f6', icon: '<i class="fas fa-envelope-open-text" aria-hidden="true"></i>', msg: 'Your application has been received and is in the queue for review. Our team typically begins reviewing within 2–3 business days.' },
+    screening:    { label: 'Screening',    color: '#8b5cf6', icon: '<i class="fas fa-magnifying-glass" aria-hidden="true"></i>', msg: 'Your application is currently being screened for eligibility. It will move to full review shortly.' },
+    under_review: { label: 'Under Review', color: '#f59e0b', icon: '<i class="fas fa-hourglass-half" aria-hidden="true"></i>', msg: 'Your application is being reviewed in detail by our membership committee. This usually takes 5-7 business days.' },
+    approved:     { label: 'Approved',     color: '#10b981', icon: '<i class="fas fa-circle-check" aria-hidden="true"></i>', msg: 'Congratulations! Your application has been approved. Your account is now upgraded to Member — refresh the page to access the full member dashboard.' },
+    rejected:     { label: 'Not Approved', color: '#ef4444', icon: '<i class="fas fa-circle-xmark" aria-hidden="true"></i>', msg: 'Unfortunately, your application was not approved at this time. Please check your email for detailed feedback from our team.' },
+    appealed:     { label: 'Appealed',     color: '#0ea5e9', icon: '<i class="fas fa-paper-plane" aria-hidden="true"></i>', msg: 'Your appeal has been received and is being reconsidered by the committee.' },
   };
 
   function getStatusConfig(status) {
-    return STATUS_CONFIG[status] || { label: status || 'Pending', color: '#94a3b8', icon: '📋', msg: 'Your application is being processed.' };
+    return STATUS_CONFIG[status] || { label: status || 'Pending', color: '#94a3b8', icon: '<i class="fas fa-clipboard-list" aria-hidden="true"></i>', msg: 'Your application is being processed.' };
   }
 
   /* ---------- LOAD APPLICATION STATUS ---------- */
@@ -50,7 +58,7 @@ const applicantDashboard = (function () {
       if (!Array.isArray(apps) || apps.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:2.5rem 1rem;">
-            <div style="font-size:3rem; margin-bottom:1rem;">📝</div>
+            <div style="font-size:3rem; margin-bottom:1rem;"><i class="fas fa-file-lines" aria-hidden="true"></i></div>
             <h4 style="margin:0 0 0.5rem; color:var(--secondary);">No Application Found</h4>
             <p style="color:var(--text-secondary); margin-bottom:1.5rem; max-width:360px; margin-left:auto; margin-right:auto;">You haven't submitted a membership application yet. Join the Youth Advocates Network today!</p>
             <a href="application-form.html" style="display:inline-block; background:var(--primary); color:#fff; padding:12px 28px; border-radius:8px; font-weight:700; text-decoration:none; transition:transform .15s;">Apply Now →</a>
