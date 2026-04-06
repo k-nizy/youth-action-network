@@ -65,7 +65,6 @@ const saveLocally = (file) => {
         isTemporary: isVercel
     };
 };
-
 // Upload endpoint
 router.post('/', protect, upload.any(), async (req, res) => {
     try {
@@ -78,7 +77,6 @@ router.post('/', protect, upload.any(), async (req, res) => {
 
         const file = req.files[0];
 
-        // Ensure we try Cloudinary first, but fallback aggressively
         let uploadResult;
         try {
             uploadResult = await new Promise((resolve, reject) => {
@@ -104,8 +102,7 @@ router.post('/', protect, upload.any(), async (req, res) => {
                 uploadStream.end(file.buffer);
             });
         } catch (cloudErr) {
-            console.warn('Cloudinary upload failed, falling back to local storage:', cloudErr.message);
-            // DO LOCAL FALLBACK
+            console.warn('Cloud upload failed. Falling back to local storage:', cloudErr.message);
             uploadResult = saveLocally(file);
         }
 
