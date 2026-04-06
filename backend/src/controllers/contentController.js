@@ -12,10 +12,10 @@ exports.getGallery = (req, res) => {
         { src: "images/gallery/gallery_10.jpg", title: "Outreach & Support Visit", location: "Kigali, Rwanda", description: "Direct support services reaching the most vulnerable children and families", category: "community" },
         { src: "images/gallery/care-and-help.png", title: "Care & Help Child Organization", location: "Kigali, Rwanda", description: "Expanding support from 35 to 574 vulnerable children through holistic programs", category: "community" },
         { src: "images/gallery/oazis-health.png", title: "OAZIS Health Initiative", location: "Rwanda", description: "Training 850+ healthcare providers and engaging 500,000+ people in awareness campaigns", category: "training" },
-        { src: "images/gallery/what-if-rwanda.png", title: "WHAT IF-Rwanda Program", location: "Iramiro Center, Rwanda", description: "Providing water access, school fees, and mentorship for children at Iramiro Center", category: "community" },
-        { src: "images/gallery/aspire-debate.png", title: "Aspire Debate Rwanda", location: "Rwanda", description: "Pioneering national and East African university debating championships", category: "leadership" },
-        { src: "images/gallery/ifg.png", title: "Informed Future Generations", location: "Rwanda", description: "Reaching 5,000+ students through school clubs with 40,000+ online views", category: "training" },
-        { src: "images/gallery/yan-team.png", title: "YAN Network Team", location: "Kigali, Rwanda", description: "The Youth Advocates Network team driving change across Rwanda", category: "leadership" }
+        { src: "images/what_if_rwanda.png", title: "WHAT IF-Rwanda Program", location: "Iramiro Center, Rwanda", description: "Providing water access, school fees, and mentorship for children at Iramiro Center", category: "community" },
+        { src: "images/gallery/aspire-debate2.png", title: "Aspire Debate Rwanda", location: "Rwanda", description: "Pioneering national and East African university debating championships", category: "leadership" },
+        { src: "images/gallery/ifg2.png", title: "Informed Future Generations", location: "Rwanda", description: "Reaching 5,000+ students through school clubs with 40,000+ online views", category: "training" },
+        { src: "images/care_help.png", title: "YAN Network Team", location: "Kigali, Rwanda", description: "The Youth Advocates Network team driving change across Rwanda", category: "leadership" }
     ];
 
     res.status(200).json({
