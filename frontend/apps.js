@@ -52,6 +52,22 @@ let currentUser = null;
 let currentModule = null;
 let currentGalleryIndex = 0;
 
+function getDashboardPathForRole(role) {
+    if (role === 'admin') return 'admin.html';
+    if (role === 'applicant') return 'applicant.html';
+    return 'profile.html';
+}
+
+function updateProfileDropdownLinks(role) {
+    const dashboardLink = document.querySelector('#dropdownMenu [data-nav="dashboard"]');
+    const profileLink = document.querySelector('#dropdownMenu [data-nav="profile"]');
+    const dashboardPath = getDashboardPathForRole(role);
+    const profilePath = role === 'member' ? 'profile.html?view=profile' : dashboardPath;
+
+    if (dashboardLink) dashboardLink.setAttribute('href', dashboardPath);
+    if (profileLink) profileLink.setAttribute('href', profilePath);
+}
+
 // Helper to get current quarter
 function getCurrentQuarter() {
     const month = new Date().getMonth();
@@ -164,6 +180,7 @@ async function initializeApp() {
     if (localStorage.getItem('yan_auth_hint') === 'true') {
         document.getElementById('loginBtn').style.display = 'none';
         document.getElementById('profileDropdown').style.display = 'flex';
+        updateProfileDropdownLinks(localStorage.getItem('yan_role') || 'member');
         // Profile name/avatar will be "YL" (placeholder) until api.getMe() returns
     }
 
@@ -677,6 +694,7 @@ function showLoggedInState() {
     if (profileAvatar) profileAvatar.textContent = currentUser.initials || getInitials(currentUser.name);
     if (dashboardAvatar) dashboardAvatar.textContent = currentUser.initials || getInitials(currentUser.name);
     if (dashboardName) dashboardName.textContent = currentUser.name;
+    updateProfileDropdownLinks(currentRole);
 
     // Set role from backend
     updateRoleDisplay(currentRole);
