@@ -6,22 +6,24 @@
   <title>YAN - Admin Dashboard</title>
   <link rel="stylesheet" href="styles.css?v=2">
   <link rel="stylesheet" href="adminDashboard.css?v=2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="config.js?v=3" defer></script>
-  <script src="apiClient.js?v=3" defer></script>
   <script>
-    // Flicker Prevention & Early Redirect
-    (function() {
+    // Early role gate to prevent non-admin dashboard flicker
+    (function () {
       const role = localStorage.getItem('yan_role');
       const hint = localStorage.getItem('yan_auth_hint');
       if (hint === 'true' && role && role !== 'admin') {
-        if (role === 'applicant') window.location.href = 'applicant.html';
-        else window.location.href = 'profile.html';
-      } else if (!hint) {
+        window.location.href = role === 'applicant' ? 'applicant.html' : 'profile.html';
+        return;
+      }
+      if (hint !== 'true') {
         window.location.href = 'index.html';
       }
     })();
   </script>
+  <script src="config.js?v=3" defer></script>
+  <script src="apiClient.js?v=3" defer></script>
 </head>
 
 <body>
@@ -85,7 +87,7 @@
         <!--Stats-->
         <div class="stats-row">
           <div class="stat-card">
-            <div class="stat-icon">📩</div>
+            <div class="stat-icon"><i class="fas fa-inbox" aria-hidden="true"></i></div>
             <div class="stat-meta">
               <div class="value" id="statPending">0</div>
               <div class="label">Pending Applications</div>
@@ -93,7 +95,7 @@
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon" style="background:rgba(34,197,94,0.12);">✅</div>
+            <div class="stat-icon" style="background:rgba(34,197,94,0.12);"><i class="fas fa-circle-check" aria-hidden="true"></i></div>
             <div class="stat-meta">
               <div class="value" id="statAccepted">0</div>
               <div class="label">Accepted</div>
@@ -101,7 +103,7 @@
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon" style="background:rgba(99,102,241,0.12);">📚</div>
+            <div class="stat-icon" style="background:rgba(99,102,241,0.12);"><i class="fas fa-book-open" aria-hidden="true"></i></div>
             <div class="stat-meta">
               <div class="value" id="statCourses">0</div>
               <div class="label">Courses</div>
@@ -109,7 +111,7 @@
           </div>
 
           <div class="stat-card">
-            <div class="stat-icon" style="background:rgba(245,158,11,0.12);">🤝</div>
+            <div class="stat-icon" style="background:rgba(245,158,11,0.12);"><i class="fas fa-handshake" aria-hidden="true"></i></div>
             <div class="stat-meta">
               <div class="value" id="statOpps">0</div>
               <div class="label">Opportunities</div>
@@ -505,7 +507,7 @@
   </div>
 </div>
 
-  <script src="adminDashboard.js?v=3" defer></script>
+  <script src="adminDashboard.js?v=4" defer></script>
   <!-- DIRECT ADD MEMBER MODAL -->
   <div id="directAddModal" class="modalx">
     <div class="modalx-card">
