@@ -22,6 +22,10 @@ const memberDashboard = (function () {
         window.location.href = target;
         return null;
       }
+      if (user.role === 'applicant') {
+        window.location.href = 'applicant.html';
+        return null;
+      }
       return user;
     } catch (err) {
       console.error('Auth check failed:', err);
@@ -157,7 +161,7 @@ const memberDashboard = (function () {
 
   function renderQuarter(q) {
     if ($('#quarterName')) {
-        $('#quarterName').textContent = q === 'Q1' ? 'Quarter 1' : q === 'Q2' ? 'Quarter 2' : q === 'Q3' ? 'Quarter 3' : 'Quarter 4';
+        $('#quarterName').textContent = 'All Modules';
     }
     
     $$('.mdQuarterTab').forEach(btn => {
@@ -168,9 +172,7 @@ const memberDashboard = (function () {
     if (!list) return;
     list.innerHTML = '';
 
-    console.log('[LMS] Rendering quarter:', q);
-    const quarterCourses = cbState.courses.filter(c => c.quarter === q);
-    console.log('[LMS] Found courses for', q, ':', quarterCourses.length, quarterCourses);
+    const quarterCourses = cbState.courses;
     
     if (quarterCourses.length === 0) {
       list.innerHTML = `<div class="mdEmptyCard">No capability building modules yet for ${q}.</div>`;
@@ -269,7 +271,7 @@ const memberDashboard = (function () {
     // Attempting to maintain previously selected option if valid
     const prev = select.value;
     select.innerHTML = '<option value="">Select module…</option>';
-    cbState.courses.filter(c => c.quarter === q).forEach(course => {
+    cbState.courses.forEach(course => {
       const opt = document.createElement('option');
       opt.value = course._id;
       opt.textContent = course.title;
@@ -352,7 +354,7 @@ const memberDashboard = (function () {
                     const url = typeof r === 'string' ? r : r?.url;
                     const title = typeof r === 'string' ? `Resource Link ${index + 1}` : r?.title || `Resource Link ${index + 1}`;
                     return `<li><a href="${url}" target="_blank" style="color:#007bff; text-decoration:none; display:flex; align-items:center; gap:5px;">
-                        📄 ${title}
+                        <i class="fas fa-file-lines" aria-hidden="true"></i> ${title}
                     </a></li>`;
                 }).join('');
             } else {
@@ -463,7 +465,7 @@ const memberDashboard = (function () {
       if (!Array.isArray(apps) || apps.length === 0) {
         container.innerHTML = `
           <div style="text-align:center; padding:2rem;">
-            <div style="font-size:2.5rem; margin-bottom:0.5rem;">📋</div>
+            <div style="font-size:2.5rem; margin-bottom:0.5rem;"><i class="fas fa-clipboard-list" aria-hidden="true"></i></div>
             <p style="color:var(--text-secondary);">You haven't submitted any applications yet.</p>
             <a href="application-form.html" class="btn btn-primary" style="margin-top:1rem; display:inline-block;">Submit Application</a>
           </div>`;
@@ -502,7 +504,7 @@ const memberDashboard = (function () {
       console.error('Failed to load applications:', err);
       container.innerHTML = `
         <div style="text-align:center; padding:2rem;">
-          <div style="font-size:2.5rem; margin-bottom:0.5rem;">📋</div>
+          <div style="font-size:2.5rem; margin-bottom:0.5rem;"><i class="fas fa-clipboard-list" aria-hidden="true"></i></div>
           <p style="color:var(--text-secondary);">No applications found or unable to load.</p>
           <a href="application-form.html" class="btn btn-primary" style="margin-top:1rem; display:inline-block;">Submit Application</a>
         </div>`;
@@ -758,7 +760,7 @@ const memberDashboard = (function () {
     if (preview) {
       preview.innerHTML = `
         <div style="background:#f0f9ff; border:1px solid #b6e3ff; padding:10px; border-radius:8px; margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
-          <div><span style="font-size:1.2rem; margin-right:8px;">📄</span> <strong>${file.name}</strong> (${Math.round(file.size / 1024)} KB)</div>
+          <div><span style="font-size:1.2rem; margin-right:8px;"><i class="fas fa-file-arrow-up" aria-hidden="true"></i></span> <strong>${file.name}</strong> (${Math.round(file.size / 1024)} KB)</div>
           <button id="removeFileBtn" style="background:none; border:none; cursor:pointer; color:#ef4444; font-weight:bold;">×</button>
         </div>
       `;
@@ -868,7 +870,7 @@ const memberDashboard = (function () {
               <span style="color:${statusColor}; font-weight:600; font-size:0.8rem; text-transform:uppercase;">${sub.status}</span>
             </div>
             <div style="display:flex; justify-content:space-between; color:var(--text-secondary); font-size:0.8rem;">
-              <span style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width:70%;" title="${sub.fileName}">📎 ${sub.fileName}</span>
+              <span style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width:70%;" title="${sub.fileName}"><i class="fas fa-paperclip" aria-hidden="true"></i> ${sub.fileName}</span>
               <span>${date}</span>
             </div>
           </div>
@@ -887,7 +889,7 @@ const memberDashboard = (function () {
 
         // Visual loading state
         reportBtn.disabled = true;
-        reportBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;">⏳ Generating…</span>';
+        reportBtn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Generating...</span>';
         if (preview) preview.innerHTML = '';
 
         try {
@@ -933,7 +935,7 @@ const memberDashboard = (function () {
             <div style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;margin-top:12px;">
               <!-- Header -->
               <div style="background:linear-gradient(135deg,#0e2954 0%,#00B4D8 100%);color:#fff;padding:18px 20px;">
-                <div style="font-weight:800;font-size:1.1rem;">📊 Progress Report · ${periodLabel}</div>
+                <div style="font-weight:800;font-size:1.1rem;"><i class="fas fa-chart-column" aria-hidden="true"></i> Progress Report · ${periodLabel}</div>
                 <div style="font-size:0.8rem;opacity:0.8;margin-top:2px;">Generated ${now}</div>
               </div>
 
