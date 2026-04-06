@@ -273,13 +273,13 @@ function renderFileLinks(files) {
       if (file.dataUrl) {
         html += `
           <div style="margin-bottom:6px;">
-            📎 <a href="${file.dataUrl}" download="${name}" target="_blank">${name}</a>${escapeHTML(size)}
+            <i class="fas fa-paperclip" aria-hidden="true"></i> <a href="${file.dataUrl}" download="${name}" target="_blank">${name}</a>${escapeHTML(size)}
           </div>
         `;
       } else {
         html += `
           <div class="muted" style="margin-bottom:6px;">
-            📄 ${name}${escapeHTML(size)} — (metadata only, will be downloadable after backend upload)
+            <i class="fas fa-file-lines" aria-hidden="true"></i> ${name}${escapeHTML(size)} — (metadata only, will be downloadable after backend upload)
           </div>
         `;
       }
@@ -539,7 +539,7 @@ function submissionBadge(status, grade) {
     return `<span class="badge b-accepted">✅ Graded${gradeStr}</span>`;
   }
   if (status === "reviewed") return `<span class="badge" style="background:rgba(59,130,246,.12);color:#2563eb;border:1px solid rgba(59,130,246,.25);">👁 Reviewed</span>`;
-  return `<span class="badge b-pending">⏳ Pending</span>`;
+  return `<span class="badge b-pending"><i class="fas fa-hourglass-half" aria-hidden="true"></i> Pending</span>`;
 }
 
 function openReviewModal(sub) {
@@ -684,7 +684,7 @@ async function renderSubmissions() {
           <td style="font-weight:700;color:var(--secondary);">${escapeHTML(sub.user?.name || "Unknown")}<br><span class="muted" style="font-size:0.78rem;font-weight:400;">${escapeHTML(sub.user?.email || "")}</span></td>
           <td>${escapeHTML(sub.course?.title || "Unknown Course")}</td>
           <td>${escapeHTML(sub.quarter || "-")}</td>
-          <td><a href="${fileUrl}" target="_blank" style="color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:4px;">📎 ${escapeHTML(fileName)}</a></td>
+          <td><a href="${fileUrl}" target="_blank" style="color:var(--primary);font-weight:600;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-paperclip" aria-hidden="true"></i> ${escapeHTML(fileName)}</a></td>
           <td class="muted">${escapeHTML(formatDate(sub.createdAt))}</td>
           <td>${submissionBadge(sub.status, sub.grade)}</td>
           <td><button class="btn-sm btn-primary-sm review-sub-btn" data-subid="${escapeHTML(sub._id || sub.id)}" style="white-space:nowrap;">${btnLabel}</button></td>
