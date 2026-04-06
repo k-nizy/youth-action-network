@@ -8,19 +8,11 @@
   <link rel="stylesheet" href="styles.css?v=2">
   <link rel="stylesheet" href="adminDashboard.css">
   <link rel="stylesheet" href="memberDashboard.css?v=2">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="config.js?v=4" defer></script>
   <script src="apiClient.js?v=7" defer></script>
-  <script>
-    (function() {
-      const role = localStorage.getItem('yan_role');
-      const hint = localStorage.getItem('yan_auth_hint');
-      if (!hint) { window.location.href = 'index.html'; return; }
-      if (role === 'admin') { window.location.href = 'admin.html'; return; }
-      if (role === 'applicant') { window.location.href = 'applicant.html'; return; }
-    })();
-  </script>
-  <script src="memberDashboard.js?v=7" defer></script>
+  <script src="memberDashboard.js?v=8" defer></script>
   <script src="profile.js?v=4" defer></script>
 </head>
 
@@ -41,19 +33,19 @@
       <nav class="admin-nav">
         <div class="nav-label">Member</div>
         <button class="active" data-view="dashboard" data-title="Member Dashboard">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
           <span class="nav-text">Dashboard</span>
         </button>
         <button data-view="applications" data-title="My Applications">
-          <span class="nav-icon">📝</span>
+          <span class="nav-icon"><i class="fas fa-file-lines" aria-hidden="true"></i></span>
           <span class="nav-text">My Applications</span>
         </button>
         <button data-view="submit" data-title="Submit Application">
-          <span class="nav-icon">📤</span>
+          <span class="nav-icon"><i class="fas fa-paper-plane" aria-hidden="true"></i></span>
           <span class="nav-text">Submit Application</span>
         </button>
         <button data-view="profile" data-title="My Profile">
-          <span class="nav-icon">👤</span>
+          <span class="nav-icon"><i class="fas fa-user" aria-hidden="true"></i></span>
           <span class="nav-text">Profile</span>
         </button>
       </nav>
@@ -90,28 +82,28 @@
           <!-- METRIC CARDS -->
           <div class="mdStats">
             <div class="mdStatCard">
-              <div class="mdStatIcon cyan">📘</div>
+              <div class="mdStatIcon cyan"><i class="fas fa-book-open" aria-hidden="true"></i></div>
               <div class="mdStatContent">
                 <div class="mdStatLabel">Completed Modules</div>
                 <div class="mdStatValue" id="statModules">0</div>
               </div>
             </div>
             <div class="mdStatCard">
-              <div class="mdStatIcon pink">📝</div>
+              <div class="mdStatIcon pink"><i class="fas fa-file-signature" aria-hidden="true"></i></div>
               <div class="mdStatContent">
                 <div class="mdStatLabel">Pending Assignments</div>
                 <div class="mdStatValue" id="statAssignments">0</div>
               </div>
             </div>
             <div class="mdStatCard">
-              <div class="mdStatIcon blue">📅</div>
+              <div class="mdStatIcon blue"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
               <div class="mdStatContent">
                 <div class="mdStatLabel">Upcoming Events</div>
                 <div class="mdStatValue" id="statEvents">0</div>
               </div>
             </div>
             <div class="mdStatCard">
-              <div class="mdStatIcon orange">🏅</div>
+              <div class="mdStatIcon orange"><i class="fas fa-award" aria-hidden="true"></i></div>
               <div class="mdStatContent">
                 <div class="mdStatLabel">Certificates Earned</div>
                 <div class="mdStatValue" id="statCertificates">0</div>
@@ -220,7 +212,7 @@
         <!-- SUBMIT VIEW (redirect) -->
         <section id="submitSection" class="dashboard-section" style="display:none;">
           <div class="mdPanel" style="text-align:center; padding:3rem;">
-            <div style="font-size:3rem; margin-bottom:1rem;">📤</div>
+            <div style="font-size:3rem; margin-bottom:1rem;"><i class="fas fa-paper-plane" aria-hidden="true"></i></div>
             <h3 class="mdPanelTitle">Submit New Application</h3>
             <p style="color:var(--text-secondary); margin:1rem 0 1.5rem;">You'll be taken to our application form.</p>
             <a href="application-form.html" class="btn btn-primary">Go to Application Form</a>
@@ -326,14 +318,14 @@
                   <div id="moduleTextContent" class="longtext" style="color:#333; line-height:1.6;"></div>
                   
                   <div id="moduleResourcesWrapper" style="margin-top:20px; display:none;">
-                      <h4 style="margin:0 0 10px; font-size:1.1rem; color:#0e2954;">📚 Lesson Resources</h4>
+                      <h4 style="margin:0 0 10px; font-size:1.1rem; color:#0e2954;"><i class="fas fa-book" aria-hidden="true"></i> Lesson Resources</h4>
                       <ul id="moduleResourcesList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;"></ul>
                   </div>
               </div>
 
               <!-- Fallback Empty State -->
               <div id="moduleEmptyState" style="display:none; width:100%; padding:40px 20px; background:#f4f7f6; border:1px dashed #ccc; border-radius:8px; align-items:center; justify-content:center; flex-direction:column; text-align:center;">
-                 <div style="font-size:3rem; margin-bottom:15px; opacity:0.8;">📋</div>
+                 <div style="font-size:3rem; margin-bottom:15px; opacity:0.8;"><i class="fas fa-clipboard-list" aria-hidden="true"></i></div>
                  <h4 style="color:#333; margin:0 0 8px 0; font-size:1.2rem;">Offline / Self-Directed Module</h4>
                  <p style="color:#666; margin:0; max-width:400px; line-height:1.5;">This module does not have digital presentation materials. Please mark it as complete once you have fulfilled the offline requirements or attended the session.</p>
               </div>
