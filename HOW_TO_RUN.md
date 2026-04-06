@@ -19,8 +19,9 @@ If you prefer running it manually, follow these steps:
 ### 2. Start the Frontend
 1. Open a **second** terminal/command prompt.
 2. Navigate to the root folder (where this file is).
-3. Run the frontend server: `npx serve -s frontend -l 8001`
+3. Run the frontend server: `npx serve frontend -l 8001`
    - *Frontend will be active at [http://localhost:8001](http://localhost:8001)*
+   - *Important: do **not** use `-s` here. SPA mode rewrites `admin.html`/`profile.html`/`applicant.html` to extensionless paths and breaks dashboard routing.*
 
 ---
 
