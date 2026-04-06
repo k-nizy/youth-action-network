@@ -19,6 +19,24 @@ try {
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+const saveLocally = (file) => {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const safeOriginalName = (file.originalname || 'upload.bin').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const fileName = `local_${Date.now()}_${safeOriginalName}`;
+    const filePath = path.join(uploadDir, fileName);
+
+    fs.writeFileSync(filePath, file.buffer);
+    return {
+        url: `/uploads/${fileName}`,
+        publicId: fileName,
+        format: safeOriginalName.split('.').pop() || 'bin'
+    };
+};
+
 // Test endpoint to verify Cloudinary credentials
 router.get('/test-credentials', protect, async (req, res) => {
     try {
@@ -37,26 +55,6 @@ router.get('/test-credentials', protect, async (req, res) => {
     }
 });
 
-// Helper function to save file locally
-const saveLocally = (file) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
-    if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    
-    // Create a safe cross-platform file name
-    const safeOriginalName = file.originalname.replace(/[^a-zA-Z0-9.]/g, '_');
-    const fileName = `local_${Date.now()}_${safeOriginalName}`;
-    const filePath = path.join(uploadDir, fileName);
-    
-    fs.writeFileSync(filePath, file.buffer);
-    return {
-        url: `/uploads/${fileName}`,
-        publicId: fileName,
-        format: safeOriginalName.split('.').pop()
-    };
-};
-
 // Upload endpoint
 router.post('/', protect, upload.any(), async (req, res) => {
     try {
@@ -69,7 +67,6 @@ router.post('/', protect, upload.any(), async (req, res) => {
 
         const file = req.files[0];
 
-        // Ensure we try Cloudinary first, but fallback aggressively
         let uploadResult;
         try {
             uploadResult = await new Promise((resolve, reject) => {
@@ -95,8 +92,7 @@ router.post('/', protect, upload.any(), async (req, res) => {
                 uploadStream.end(file.buffer);
             });
         } catch (cloudErr) {
-            console.warn('Cloudinary upload failed, falling back to local storage:', cloudErr.message);
-            // DO LOCAL FALLBACK
+            console.warn('Cloud upload failed. Falling back to local storage:', cloudErr.message);
             uploadResult = saveLocally(file);
         }
 
