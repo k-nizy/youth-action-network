@@ -8,19 +8,11 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="adminDashboard.css">
   <link rel="stylesheet" href="memberDashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="config.js?v=5" defer></script>
   <script src="apiClient.js?v=5" defer></script>
-  <script>
-    (function() {
-      const role = localStorage.getItem('yan_role');
-      const hint = localStorage.getItem('yan_auth_hint');
-      if (!hint) { window.location.href = 'index.html'; return; }
-      if (role === 'admin') { window.location.href = 'admin.html'; return; }
-      if (role === 'member') { window.location.href = 'profile.html'; return; }
-    })();
-  </script>
-  <script src="applicantDashboard.js?v=5" defer></script>
+  <script src="applicantDashboard.js?v=6" defer></script>
 </head>
 
 <body>
@@ -40,19 +32,19 @@
       <nav class="admin-nav">
         <div class="nav-label">Main Menu</div>
         <button class="active" data-view="overview" data-title="Applicant Portal">
-          <span class="nav-icon">🏠</span>
+          <span class="nav-icon"><i class="fas fa-house" aria-hidden="true"></i></span>
           <span class="nav-text">Overview</span>
         </button>
         <button data-view="status" data-title="Application Status">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
           <span class="nav-text">My Status</span>
         </button>
         <button data-view="submit" data-title="Submit Application">
-          <span class="nav-icon">📤</span>
+          <span class="nav-icon"><i class="fas fa-paper-plane" aria-hidden="true"></i></span>
           <span class="nav-text">Submit Application</span>
         </button>
         <button data-view="profile" data-title="My Profile">
-          <span class="nav-icon">👤</span>
+          <span class="nav-icon"><i class="fas fa-user" aria-hidden="true"></i></span>
           <span class="nav-text">Profile</span>
         </button>
       </nav>
@@ -91,7 +83,7 @@
                     <p style="opacity: 0.9; font-size: 1.1rem; line-height: 1.6; margin-bottom: 1.5rem;">Ready to take your organization to the next level? Apply for membership today to access exclusive opportunities, capacity building modules, and our regional network.</p>
                     <button class="btn btn-primary" onclick="window.location.href='application-form.html'" style="background: white; color: #03045E; border: none; font-weight: 700;">Apply for Membership</button>
                 </div>
-                <div style="font-size: 8rem; opacity: 0.1; position: absolute; right: -20px; top: -10px; transform: rotate(-15deg);">🚀</div>
+                <div style="font-size: 8rem; opacity: 0.1; position: absolute; right: -20px; top: -10px; transform: rotate(-15deg);"><i class="fas fa-rocket" aria-hidden="true"></i></div>
              </div>
           </div>
 
@@ -147,7 +139,7 @@
         <!-- SUBMIT VIEW (redirect) -->
         <section id="submitSection" class="dashboard-section" style="display:none;">
           <div class="mdPanel" style="text-align:center; padding:3rem;">
-            <div style="font-size:3rem; margin-bottom:1rem;">📤</div>
+            <div style="font-size:3rem; margin-bottom:1rem;"><i class="fas fa-paper-plane" aria-hidden="true"></i></div>
             <h3 class="mdPanelTitle">Submit New Application</h3>
             <p style="color:var(--text-secondary); margin:1rem 0 1.5rem;">You'll be taken to our application form.</p>
             <a href="application-form.html" class="btn btn-primary">Go to Application Form</a>
